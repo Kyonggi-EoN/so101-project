@@ -1,0 +1,18 @@
+# 줄바꿈을 LF 로 통일한다.
+# 이게 없으면 Windows git 이 third_party/lerobot 의 .py 537개를 CRLF 로 바꿔 커밋하고,
+# 다음 lerobot 업데이트 때 전 파일이 변경된 것처럼 보여 진짜 diff 가 묻힌다.
+* text=auto eol=lf
+
+# 바이너리 — 변환 금지
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.mp4   binary
+*.safetensors binary
+*.parquet binary
+
+# PowerShell 은 CRLF 가 안전하다 (구버전 호환)
+*.ps1   text eol=crlf
+
+# uv.lock 은 기계 생성물 — diff 를 접어둔다
+uv.lock linguist-generated=true

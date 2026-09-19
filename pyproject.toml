@@ -1,0 +1,389 @@
+# lerobot의 pyproject.toml(커밋 5aa74557)을 가져온 파일이다.
+# 우리가 바꾼 곳은 4군데뿐이고, 각각 [우리 변경] 표시가 붙어 있다.
+#
+#   1. dependencies      SO-101용 extras를 기본으로 켬 (feetech, core_scripts, training)
+#   2. tool.uv.index/    torch CUDA 인덱스 강제 제거 — GPU 없는 부원에게
+#      tool.uv.sources   4.2GB를 받게 하지 않기 위해
+#   3. packages.find     where = ["src"] -> ["third_party"]
+#   4. [project.urls]    제거 — 업스트림 이슈 트래커로 오인하지 않도록
+#                        (dynamic=readme 도 같이 제거)
+#
+# lerobot 버전을 올릴 때는 tools/update_lerobot.ps1 을 쓸 것. 직접 고치지 말 것.
+# [tool.ruff] 이하 lerobot 개발용 린터 설정은 우리에게 불필요해서 제외했다.
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "lerobot"
+version = "0.6.2"
+description = "🤗 LeRobot: State-of-the-art Machine Learning for Real-World Robotics in Pytorch"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.12"
+authors = [
+    { name = "Rémi Cadène", email = "re.cadene@gmail.com" },
+    { name = "Simon Alibert", email = "alibert.sim@gmail.com" },
+    { name = "Alexander Soare", email = "alexander.soare159@gmail.com" },
+    { name = "Quentin Gallouédec", email = "quentin.gallouedec@ec-lyon.fr" },
+    { name = "Steven Palma", email = "imstevenpmwork@ieee.org" },
+    { name = "Pepijn Kooijmans", email = "pepijnkooijmans@outlook.com"},
+    { name = "Michel Aractingi", email = "michel.aractingi@gmail.com"},
+    { name = "Adil Zouitine", email = "adilzouitinegm@gmail.com" },
+    { name = "Dana Aubakirova", email = "danaaubakirova17@gmail.com"},
+    { name = "Caroline Pascal", email = "caroline8.pascal@gmail.com"},
+    { name = "Martino Russi", email = "nopyeps@gmail.com"},
+    { name = "Thomas Wolf", email = "thomaswolfcontact@gmail.com" },
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = ["lerobot", "huggingface", "robotics",  "machine learning", "artificial intelligence"]
+
+dependencies = [
+    # [우리 변경] SO-101 워크플로우에 필요한 extras를 기본으로 켠다.
+    #   feetech      STS3215 서보 (pyserial, deepdiff 포함)
+    #   core_scripts calibrate / teleoperate / record / replay / rollout (dataset+hardware+viz)
+    #   training     lerobot-train, wandb
+    # 이게 없으면 `uv sync`가 base만 깔아서 로봇이 안 움직인다.
+    "lerobot[feetech,core_scripts,training]",
+
+    # Core ML
+    "torch>=2.7,<2.12.0",
+    "torchvision>=0.22.0,<0.27.0",
+    "numpy>=2.0.0,<2.3.0", # NOTE: Explicitly listing numpy helps the resolver converge faster. Upper bound imposed by opencv-python-headless.
+    "opencv-python-headless>=4.9.0,<4.14.0",
+    "Pillow>=10.0.0,<13.0.0",
+    "einops>=0.8.0,<0.9.0",
+
+    # Config & Hub
+    "draccus>=0.11.6,<0.12.0",
+    "huggingface-hub>=1.6.0,<2.0.0",
+    "requests>=2.32.0,<3.0.0",
+
+    # Environments
+    # NOTE: gymnasium is used in lerobot.envs (lerobot-train, lerobot-eval), policies/factory,
+    # and robots/unitree. Moving it to an optional extra would require import guards across many
+    # tightly-coupled modules. Candidate for a future refactor to decouple envs from the core.
+    "gymnasium>=1.1.1,<2.0.0",
+
+    # Serialization & checkpointing
+    "safetensors>=0.4.3,<1.0.0",
+
+    # Lightweight utilities
+    "packaging>=24.2,<26.0",
+    "termcolor>=2.4.0,<4.0.0",
+    "tqdm>=4.66.0,<5.0.0",
+
+    # Build tools (required by opencv-python-headless on some platforms)
+    "cmake>=3.29.0.1,<4.2.0",
+    "setuptools>=71.0.0,<82.0.0",  # torch 2.11 requires setuptools<82; a higher cap makes the resolver downgrade torch
+]
+
+# Optional dependencies
+[project.optional-dependencies]
+
+# ── Feature-scoped extras ──────────────────────────────────
+lancedb = [
+    "lerobot[dataset]",
+    "lancedb>=0.37.1,<0.40.0",
+]
+lancedb-convert = [
+    "lerobot[lancedb]",
+    "lerobot-lancedb>=0.3.1,<0.4.0",
+]
+dataset = [
+    "datasets>=4.8.0,<5.0.0",
+    "pandas>=2.0.0,<3.0.0", # NOTE: Transitive dependency of datasets
+    "pyarrow>=21.0.0,<30.0.0", # NOTE: Transitive dependency of datasets
+    "lerobot[av-dep]",
+
+    # NOTE: torchcodec wheel availability matrix (PyPI):
+    #   - linux x86_64/amd64 + macOS arm64 : wheels since 0.3.0 (the historic supported set).
+    #   - win32 x86_64                     : wheels since 0.7.0  (needs torch>=2.8).
+    #   - linux aarch64/arm64              : wheels since 0.11.0 (needs torch>=2.11).
+    #   - macOS x86_64 (Intel) and linux armv7l: no wheels in any released version -> fall through to the PyAV decoder.
+    # Each platform gets its own line so the resolver picks the minimum version that has a wheel for it.
+
+    # Other torch/torchcodec pairings (informational): 0.8.1 = ffmpeg>=8 support, 0.10 = system-wide ffmpeg support, 0.12 needs torch==2.12.
+    "torchcodec>=0.3.0,<0.12.0; (sys_platform == 'linux' and (platform_machine == 'x86_64' or platform_machine == 'AMD64')) or (sys_platform == 'darwin' and platform_machine == 'arm64')",
+    "torchcodec>=0.7.0,<0.12.0; sys_platform == 'win32'",
+    "torchcodec>=0.11.0,<0.12.0; sys_platform == 'linux' and (platform_machine == 'aarch64' or platform_machine == 'arm64')",
+    "jsonlines>=4.0.0,<5.0.0",
+]
+training = [
+    "lerobot[dataset]",
+    "wandb>=0.24.0,<0.28.0",
+    "lerobot[accelerate-dep]",
+]
+hardware = [
+    "lerobot[pynput-dep]",
+    "lerobot[pyserial-dep]",
+    "lerobot[deepdiff-dep]",
+]
+viz = [
+    "rerun-sdk>=0.24.0,<0.34.0",
+    "foxglove-sdk>=0.25.1,<0.26.0",
+]
+# ── User-facing composite extras (map to CLI scripts) ─────
+# lerobot-record, lerobot-replay, lerobot-calibrate, lerobot-teleoperate, etc.
+core_scripts = ["lerobot[dataset]", "lerobot[hardware]", "lerobot[viz]"]
+# lerobot-eval -- base evaluation framework. You also need the policy's extra (e.g., lerobot[pi])
+# and the environment's extra (e.g., lerobot[pusht]) if evaluating in simulation.
+evaluation = ["lerobot[av-dep]"]
+# lerobot-dataset-viz, lerobot-imgtransform-viz
+dataset_viz = ["lerobot[dataset]", "lerobot[viz]"]
+
+# Common
+av-dep = ["av>=15.0.0,<16.0.0"]
+pygame-dep = ["pygame>=2.5.1,<2.7.0"]
+# NOTE: 0.9.16 links against liburdfdom_sensor.so.4, which is unavailable on Ubuntu 24.04
+# (noble ships urdfdom 3.x). Cap below 0.9.16 until system urdfdom 4.x is broadly available.
+#
+# NOTE: placo pulls in pin (Pinocchio), whose binary wheels dlopen specific cmeel sonames
+# (liburdfdom_sensor.so.4.0, libtinyxml2.so.10) but declare only `>=` floors on their cmeel
+# packages. The 2026-05-21 major bumps (cmeel-urdfdom 6.0.0 -> .so.6, cmeel-tinyxml2 11.0.0
+# -> .so.11) ship newer sonames, so left unpinned the resolver grabs them and `import placo`
+# fails at load with "liburdfdom_sensor.so.4.0: cannot open shared object file" (see #3755).
+# There is no cmeel-urdfdom 5.x; <5 selects the 4.x ABI the placo/pin wheels are built against.
+placo-dep = ["placo>=0.9.6,<0.9.16", "cmeel-urdfdom>=4,<5", "cmeel-tinyxml2<11"]
+transformers-dep = ["transformers>=5.4.0,<5.6.0"]
+grpcio-dep = ["grpcio>=1.73.1,<2.0.0", "protobuf>=6.31.1,<8.0.0"]
+accelerate-dep = ["accelerate>=1.14.0,<2.0.0"]
+can-dep = ["python-can>=4.2.0,<5.0.0"]
+peft-dep = ["peft>=0.18.0,<1.0.0"]
+scipy-dep = ["scipy>=1.14.0,<2.0.0"]
+diffusers-dep = ["diffusers>=0.38.0,<0.40.0"]
+qwen-vl-utils-dep = ["qwen-vl-utils>=0.0.11,<0.1.0"]
+matplotlib-dep = ["matplotlib>=3.10.3,<4.0.0", "contourpy>=1.3.0,<2.0.0"] # NOTE: Explicitly listing contourpy helps the resolver converge faster.
+pyserial-dep = ["pyserial>=3.5,<4.0"]
+deepdiff-dep = ["deepdiff>=7.0.1,<9.0.0"]
+pynput-dep = ["pynput>=1.7.8,<1.9.0"]
+pyzmq-dep = ["pyzmq>=26.2.1,<28.0.0"]
+motorbridge-dep = ["motorbridge>=0.3.2,<0.4.0"]
+motorbridge-smart-servo-dep = ["motorbridge-smart-servo>=0.0.4,<0.1.0"]
+timm-dep = ["timm>=1.0.0,<1.1.0"]
+
+# Motors
+feetech = ["feetech-servo-sdk>=1.0.0,<2.0.0", "lerobot[pyserial-dep]", "lerobot[deepdiff-dep]"]
+dynamixel = ["dynamixel-sdk>=3.7.31,<3.9.0", "lerobot[pyserial-dep]", "lerobot[deepdiff-dep]"]
+damiao = ["lerobot[can-dep]"]
+robstride = ["lerobot[can-dep]"]
+
+# Robots
+openarms = ["lerobot[damiao]"]
+gamepad = ["lerobot[pygame-dep]", "hidapi>=0.14.0,<0.15.0"]
+hopejr = ["lerobot[feetech]", "lerobot[pygame-dep]"]
+lekiwi = ["lerobot[feetech]", "lerobot[pyzmq-dep]"]
+unitree_g1 = [
+    # "unitree-sdk2==1.0.1",
+    "lerobot[pyzmq-dep]",
+    "lerobot[pyserial-dep]",
+    "onnxruntime>=1.16.0,<2.0.0",
+    "onnx>=1.16.0,<2.0.0",
+    "meshcat>=0.3.0,<0.4.0",
+    "lerobot[matplotlib-dep]",
+    "lerobot[pygame-dep]",
+]
+# reachy2-sdk caps grpcio<=1.73.1 and protobuf<=6.32.0; quarantined here so downstream users aren't held back. reachy2-sdk is unlikely to release new versions.
+reachy2 = [
+    "reachy2_sdk>=1.0.15,<1.1.0",
+    "grpcio<=1.73.1",
+    "protobuf<=6.32.0",
+]
+# Seeed Studio reBot B601-DM follower (motorbridge / CAN) + StarArm102 / reBot Arm 102
+# leader (motorbridge-smart-servo / FashionStar UART servos).
+rebot = ["lerobot[motorbridge-dep]", "lerobot[motorbridge-smart-servo-dep]"]
+kinematics = ["lerobot[placo-dep]"]
+intelrealsense = [
+    "pyrealsense2>=2.55.1.6486,<2.57.0 ; sys_platform != 'darwin'",
+    "pyrealsense2-macosx>=2.54,<2.57.0 ; sys_platform == 'darwin'",
+]
+phone = ["hebi-py>=2.8.0,<2.12.0", "teleop>=0.1.0,<0.2.0", "fastapi<1.0", "lerobot[scipy-dep]"]
+
+# Policies
+diffusion = ["lerobot[diffusers-dep]"]
+wallx = [
+    "lerobot[transformers-dep]",
+    "lerobot[peft-dep]",
+    "lerobot[scipy-dep]",
+    "torchdiffeq>=0.2.4,<0.3.0",
+    "lerobot[qwen-vl-utils-dep]",
+]
+pi = ["lerobot[transformers-dep]", "lerobot[scipy-dep]"]
+molmoact2 = ["lerobot[transformers-dep]", "lerobot[peft-dep]", "lerobot[scipy-dep]"]
+smolvla = ["lerobot[transformers-dep]", "num2words>=0.5.14,<0.6.0", "lerobot[accelerate-dep]"]
+multi_task_dit = ["lerobot[transformers-dep]", "lerobot[diffusers-dep]"]
+groot = [
+    "lerobot[transformers-dep]",
+    "lerobot[peft-dep]",
+    "lerobot[diffusers-dep]",
+    "lerobot[dataset]", # NOTE: processor_groot builds a LeRobotDataset for relative-action training stats
+    "dm-tree>=0.1.8,<1.0.0",
+    "lerobot[timm-dep]",
+    "decord>=0.6.0,<1.0.0; (platform_machine == 'AMD64' or platform_machine == 'x86_64')",
+]
+sarm = ["lerobot[transformers-dep]", "pydantic>=2.0.0,<3.0.0", "faker>=33.0.0,<35.0.0", "lerobot[matplotlib-dep]", "lerobot[qwen-vl-utils-dep]"]
+robometer = ["lerobot[transformers-dep]", "lerobot[qwen-vl-utils-dep]", "lerobot[peft-dep]"]
+topreward = ["lerobot[transformers-dep]"]
+xvla = ["lerobot[transformers-dep]"]
+eo1 = ["lerobot[transformers-dep]", "lerobot[qwen-vl-utils-dep]"]
+fastwam = [
+    "lerobot[transformers-dep]",
+    "lerobot[diffusers-dep]",
+]
+evo1 = ["lerobot[transformers-dep]"]
+hilserl = ["lerobot[transformers-dep]", "lerobot[dataset]", "gym-hil>=0.1.14,<0.2.0", "lerobot[grpcio-dep]", "lerobot[placo-dep]"]
+vla_jepa = ["lerobot[transformers-dep]", "lerobot[diffusers-dep]", "lerobot[qwen-vl-utils-dep]"]
+lingbot_va = ["lerobot[transformers-dep]", "lerobot[diffusers-dep]", "lerobot[accelerate-dep]"]
+lawam = [
+    "lerobot[transformers-dep]",
+    "lerobot[diffusers-dep]",
+]
+
+# Features
+async = ["lerobot[grpcio-dep]", "lerobot[matplotlib-dep]"]
+peft = ["lerobot[transformers-dep]", "lerobot[peft-dep]"]
+
+# Annotation pipeline (lerobot-annotate). The only backend is ``openai``,
+# which talks to any OpenAI-compatible server (``vllm serve`` /
+# ``transformers serve`` / hosted). Distributed runs use Hugging Face Jobs
+# (see examples/annotations/run_hf_job.py).
+annotations = [
+    "lerobot[dataset]",
+    "lerobot[transformers-dep]",
+    "openai>=1.40,<2.0",
+    # ``vllm`` is intentionally NOT a hard dep: it pins an older torch, and
+    # uv's single unified lock would then cap ``torch`` for every extra
+    # (e.g. forcing 2.8 while ``torchcodec`` in [dataset] needs 2.11 -> ABI
+    # break in CI). The HF Jobs image (``vllm/vllm-openai``) provides vLLM;
+    # install it locally only if you run your own ``vllm serve``.
+]
+
+# Development
+dev = ["pre-commit>=3.7.0,<5.0.0", "debugpy>=1.8.1,<1.9.0", "lerobot[grpcio-dep]", "grpcio-tools>=1.73.1,<2.0.0", "mypy>=1.19.1", "ruff>=0.14.1", "lerobot[notebook]"]
+notebook = ["jupyter>=1.0.0,<2.0.0", "ipykernel>=6.0.0,<7.0.0"]
+test = ["pytest>=8.1.0,<10.0.0", "pytest-timeout>=2.4.0,<3.0.0", "pytest-cov>=5.0.0,<8.0.0", "mock-serial>=0.0.1,<0.1.0 ; sys_platform != 'win32'"]
+video_benchmark = ["scikit-image>=0.23.2,<0.26.0", "pandas>=2.2.2,<2.4.0"]
+
+# Simulation
+# NOTE: Explicitly listing scipy helps flatten the dependecy tree.
+aloha = ["lerobot[dataset]", "gym-aloha>=0.1.4,<0.2.0", "lerobot[scipy-dep]"]
+pusht = ["lerobot[dataset]", "gym-pusht>=0.1.5,<0.2.0", "pymunk>=6.6.0,<7.0.0"] # TODO: Fix pymunk version in gym-pusht instead
+libero = ["lerobot[dataset]", "lerobot[transformers-dep]", "hf-libero>=0.1.4,<0.2.0; sys_platform == 'linux'", "lerobot[scipy-dep]"]
+metaworld = ["lerobot[dataset]", "metaworld==3.0.0", "lerobot[scipy-dep]"]
+# NOTE: vlabench is NOT exposed as a `lerobot` extra. Its only distribution
+# is the OpenMOSS/VLABench GitHub repo (package name `VLABench`, no PyPI
+# release), so any `vlabench>=X` pip spec is unresolvable. Install it
+# manually alongside MuJoCo / dm-control — see docs/source/vlabench.mdx
+# for the recipe.
+# NOTE: robomme is NOT a pyproject extra — mani-skill hard-pins numpy<2
+# which conflicts with lerobot's numpy>=2 base pin, so the two trees can't
+# resolve into a single env. Install it only in the RoboMME Docker image
+# via `uv pip install --override` (see docker/Dockerfile.benchmark.robomme).
+# NOTE: robocasa is NOT exposed as a `lerobot` extra. Its setup.py pins
+# `lerobot==0.3.3` in install_requires, which cyclically shadows our own
+# workspace `lerobot` and makes the graph unsolvable under any resolver
+# (uv, pip). Install it manually alongside robosuite — see
+# docs/source/robocasa.mdx for the recipe.
+
+# All
+all = [
+    # Feature-scoped extras
+    "lerobot[dataset]",
+    "lerobot[lancedb]",
+    "lerobot[training]",
+    "lerobot[hardware]",
+    "lerobot[viz]",
+    # NOTE(resolver hint): scipy is pulled in transitively via lerobot[scipy-dep] through
+    # multiple extras (aloha, metaworld, pi, wallx, phone). Listing it explicitly
+    # helps pip's resolver converge by constraining scipy early, before it encounters
+    # the loose scipy requirements from transitive deps like dm-control and metaworld.
+    "scipy>=1.14.0,<2.0.0",
+    "lerobot[dynamixel]",
+    "lerobot[feetech]",
+    "lerobot[damiao]",
+    "lerobot[robstride]",
+    "lerobot[gamepad]",
+    "lerobot[hopejr]",
+    "lerobot[lekiwi]",
+    "lerobot[openarms]",
+    "lerobot[reachy2]",
+    "lerobot[rebot]",
+    "lerobot[kinematics]",
+    "lerobot[intelrealsense]",
+    "lerobot[diffusion]",
+    "lerobot[multi_task_dit]",
+    "lerobot[wallx]",
+    "lerobot[pi]",
+    "lerobot[molmoact2]",
+    "lerobot[smolvla]",
+    "lerobot[fastwam]",
+    "lerobot[groot]",
+    "lerobot[xvla]",
+    "lerobot[evo1]",
+    "lerobot[hilserl]",
+    "lerobot[vla_jepa]",
+    "lerobot[lingbot_va]",
+    "lerobot[lawam]",
+    "lerobot[async]",
+    "lerobot[dev]",
+    "lerobot[test]",
+    "lerobot[video_benchmark]",
+    "lerobot[aloha]",
+    "lerobot[pusht]",
+    "lerobot[phone]",
+    "lerobot[libero]; sys_platform == 'linux'",
+    "lerobot[metaworld]",
+    "lerobot[sarm]",
+    "lerobot[robometer]",
+    "lerobot[topreward]",
+    "lerobot[peft]",
+    # "lerobot[unitree_g1]", TODO: Unitree requires specific installation instructions for unitree_sdk2
+]
+
+[project.scripts]
+lerobot-calibrate="lerobot.scripts.lerobot_calibrate:main"
+lerobot-find-cameras="lerobot.scripts.lerobot_find_cameras:main"
+lerobot-find-port="lerobot.scripts.lerobot_find_port:main"
+lerobot-record="lerobot.scripts.lerobot_record:main"
+lerobot-replay="lerobot.scripts.lerobot_replay:main"
+lerobot-setup-motors="lerobot.scripts.lerobot_setup_motors:main"
+lerobot-teleoperate="lerobot.scripts.lerobot_teleoperate:main"
+lerobot-convert-dcp="lerobot.scripts.lerobot_convert_dcp:main"
+lerobot-eval="lerobot.scripts.lerobot_eval:main"
+lerobot-train="lerobot.scripts.lerobot_train:main"
+lerobot-train-tokenizer="lerobot.scripts.lerobot_train_tokenizer:main"
+lerobot-dataset-viz="lerobot.scripts.lerobot_dataset_viz:main"
+lerobot-info="lerobot.scripts.lerobot_info:main"
+lerobot-find-joint-limits="lerobot.scripts.lerobot_find_joint_limits:main"
+lerobot-imgtransform-viz="lerobot.scripts.lerobot_imgtransform_viz:main"
+lerobot-edit-dataset="lerobot.scripts.lerobot_edit_dataset:main"
+lerobot-setup-can="lerobot.scripts.lerobot_setup_can:main"
+lerobot-annotate="lerobot.scripts.lerobot_annotate:main"
+lerobot-rollout="lerobot.scripts.lerobot_rollout:main"
+
+# ---------------- Tool Configurations ----------------
+
+# cu128 wheels keep broad hardware reach; the driver floor is 570.86.
+# To use a different CUDA variant, reinstall torch with an explicit index, e.g.:
+# [우리 변경] torch CUDA 인덱스 강제를 제거했다.
+# 업스트림은 리눅스를 cu128 인덱스로 고정하는데, 우리는 PyPI 기본을 쓴다.
+#   - Windows -> CPU 빌드(~200MB). GPU 없는 부원이 4.2GB를 받지 않는다.
+#   - 리눅스   -> PyPI 휠에 CUDA가 포함돼 있어 클라우드 학습은 그대로 된다.
+# Windows에서 GPU를 쓰려면(학습, 그리고 30Hz 실시간 추론) 설치 후 한 줄 더:
+#   uv pip install --force-reinstall torch torchvision --index-url https://download.pytorch.org/whl/cu128
+
+[tool.setuptools.package-data]
+lerobot = ["envs/*.json", "annotations/steerable_pipeline/prompts/*.txt"]
+
+[tool.setuptools.packages.find]
+where = ["third_party"]   # [우리 변경] src -> third_party
