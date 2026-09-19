@@ -53,7 +53,7 @@
 **실행**
 
 ```powershell
-cd C:\...\so101_project
+cd C:\...\so101-project
 uv sync
 
 # 여기에 명령어

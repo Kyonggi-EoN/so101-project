@@ -19,8 +19,8 @@
 ## 시작하기
 
 ```powershell
-git clone https://github.com/<동아리-깃허브-이름>/so101_project.git
-cd so101_project
+git clone https://github.com/Kyonggi-EoN/so101-project.git
+cd so101-project
 uv sync
 ```
 
