@@ -27,10 +27,37 @@ uv sync
 | [docs/1_setup.md](docs/1_setup.md) | **처음이면 여기부터.** 설치, 그래픽카드 설정 |
 | [docs/2_codebase.md](docs/2_codebase.md) | 프로젝트 구조 — 뭐가 어디 있고 누가 고칠 수 있나 |
 | [docs/3_commands.md](docs/3_commands.md) | `uv` 사용법, 환경 점검 |
+| [docs/4_git.md](docs/4_git.md) | git 이 처음이라면 |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | **작업 규칙.** 브랜치, PR 3단계 |
+| [AGENTS.md](AGENTS.md) | AI 코딩 에이전트용 지침 |
 | [projects/](projects/) | 프로젝트 목록 |
 
 로봇을 실제로 움직이는 방법은 `projects/` 의 기초 학습 프로젝트에 있다.
+
+---
+
+## AI 도구를 쓴다면
+
+Claude Code, Cursor, GitHub Copilot 같은 AI 코딩 도구를 쓸 때는 **작업을 시키기 전에 [AGENTS.md](AGENTS.md) 를 읽게 한다.**
+
+```
+AGENTS.md 를 먼저 읽고 시작해줘
+```
+
+요즘 도구들은 대부분 알아서 읽지만, 확실히 하려면 직접 말해 주는 게 좋다.
+
+[AGENTS.md](AGENTS.md) 에는 이런 것들이 적혀 있다.
+
+- 건드리면 안 되는 폴더와 그 이유
+- `pip` 대신 `uv` 를 쓰는 규칙
+- lerobot 옵션을 **추측하지 말고 코드에서 확인하라**는 지침
+- 로봇 하드웨어를 다룰 때의 안전 규칙
+- 문서에 들어가야 할 6개 항목
+
+이걸 안 읽히면 AI 가 `third_party/` 를 고치거나, 없는 옵션을 지어내거나, 모터에 토크를 거는 명령을 그냥 실행할 수 있다.
+
+> AI 가 만든 것도 **본인이 이해하고 설명할 수 있어야 한다.**
+> PR 3단계의 마지막이 세미나 발표라는 점을 기억할 것.
 
 ---
 

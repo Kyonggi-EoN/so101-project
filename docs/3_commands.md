@@ -157,3 +157,4 @@ uv sync
 - [1_setup.md](1_setup.md) — 설치
 - [2_codebase.md](2_codebase.md) — 프로젝트 구조
 - `projects/` — 로봇을 실제로 움직여 보기
+- [4_git.md](4_git.md) — git 이 처음이라면

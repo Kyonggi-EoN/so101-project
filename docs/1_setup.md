@@ -51,6 +51,43 @@ pwd
 에러 메시지는 `OSError: [WinError 1314]` 로 나온다. 미리 켜두면 겪을 일이 없다.
 </details>
 
+### git 설치
+
+**이 리포를 `git clone` 으로 받았다면 이미 깔려 있다.** 확인만 하고 넘어가면 된다.
+
+```powershell
+git --version
+```
+
+`git version 2.xx.x` 가 나오면 된다. 없다고 나오면 설치한다.
+
+```powershell
+winget install --id Git.Git -e
+```
+
+설치 후 **PowerShell 창을 닫고 다시 연다.**
+
+### git 에 내 이름 알려주기 (한 번만)
+
+git 은 "누가 이 코드를 고쳤는지" 를 기록한다. 설정하지 않으면 **커밋이 아예 안 된다.**
+
+```powershell
+git config --global user.name "<내 이름 또는 깃허브 아이디>"
+git config --global user.email "<깃허브에 등록한 이메일>"
+```
+
+> 이메일은 **GitHub 계정에 등록한 것과 같아야** 커밋이 내 것으로 인식된다.
+> 이메일을 공개하고 싶지 않다면 GitHub 의 Settings → Emails 에서
+> `12345678+아이디@users.noreply.github.com` 형태의 주소를 받아 쓰면 된다.
+
+확인:
+
+```powershell
+git config --global --list
+```
+
+git 명령어를 더 알고 싶다면 → [4_git.md](4_git.md)
+
 ### uv 설치
 
 ```powershell

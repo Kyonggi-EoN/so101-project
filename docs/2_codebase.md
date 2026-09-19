@@ -224,3 +224,4 @@ git checkout -- third_party/   # 전부 원래대로
 - [1_setup.md](1_setup.md) — 설치
 - [3_commands.md](3_commands.md) — uv 명령어, 환경 점검
 - `projects/` — 로봇을 실제로 움직여 보기
+- [4_git.md](4_git.md) — git 이 처음이라면
