@@ -181,6 +181,27 @@ uv run lerobot-teleoperate --help
 
 ---
 
+## 하드웨어
+
+| | |
+|---|---|
+| 로봇팔 | SO-101 — follower(움직이는 쪽) + leader(사람이 잡고 조종하는 쪽) |
+| 모터 | Feetech STS3215 × 6 (팔 하나당) |
+| 카메라 | USB 웹캠 |
+
+관절 ID 는 아래처럼 정해져 있다. 에러 메시지에 `wrist_flex` 같은 이름이 나오면 이 표를 보면 된다.
+
+| ID | 관절 | 어디 |
+|---|---|---|
+| 1 | `shoulder_pan` | 어깨 좌우 회전 |
+| 2 | `shoulder_lift` | 어깨 상하 |
+| 3 | `elbow_flex` | 팔꿈치 |
+| 4 | `wrist_flex` | 손목 상하 |
+| 5 | `wrist_roll` | 손목 회전 |
+| 6 | `gripper` | 집게 |
+
+---
+
 ## 코드 읽어 보기
 
 ### 편한 단축키

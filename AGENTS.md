@@ -6,7 +6,7 @@ AI 코딩 에이전트를 위한 지침. 사람이 읽는 문서는 [README.md](
 
 ## 이 리포가 무엇인가
 
-동아리 SO-101 로봇팔 프로젝트. [lerobot](https://github.com/huggingface/lerobot) 을 `third_party/lerobot/` 에 **복사해 두고(vendoring)** 쓴다. 부원들이 코드를 읽으며 공부하는 것이 목적이다.
+경기대학교 EoN 동아리 SO-101 로봇팔 프로젝트. [lerobot](https://github.com/huggingface/lerobot) 을 `third_party/lerobot/` 에 **복사해 두고(vendoring)** 쓴다. 부원들이 코드를 읽으며 공부하는 것이 목적이다.
 
 - 패키지 관리: `uv` (pip 아님)
 - Python 3.12, Windows(PowerShell) 기준
