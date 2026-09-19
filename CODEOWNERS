@@ -1,4 +1,4 @@
-# 이 경로들은 관리자 승인 없이는 머지되지 않는다.
+# 이 경로들은 메인테이너 승인 없이는 머지되지 않는다.
 # GitHub > Settings > Branches 에서 main 브랜치에
 # "Require a pull request before merging" + "Require review from Code Owners"
 # 를 켜야 실제로 강제된다. CODEOWNERS 파일만으로는 아무 효력이 없다.

@@ -10,4 +10,4 @@ projects/
    └─ ...
 ```
 
-`third_party/`, `docs/`, `calibration/`, `pyproject.toml` 은 관리자만 수정한다.
+`third_party/`, `docs/`, `calibration/`, `pyproject.toml` 은 메인테이너만 수정한다.
