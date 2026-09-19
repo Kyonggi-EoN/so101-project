@@ -27,4 +27,8 @@ data/
 Thumbs.db
 .idea/
 
+# 빌드 산출물 — uv sync 할 때마다 다시 생긴다.
+# SOURCES.txt 에 537개 파일 목록이 들어 있어서 커밋하면 업데이트마다 diff 가 요동친다.
+third_party/*.egg-info/
+
 # 주의: third_party/lerobot 은 일부러 커밋한다. 여기에 넣지 말 것.
