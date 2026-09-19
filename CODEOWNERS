@@ -1,14 +1,27 @@
 # 이 경로들은 메인테이너 승인 없이는 머지되지 않는다.
-# GitHub > Settings > Branches 에서 main 브랜치에
-# "Require a pull request before merging" + "Require review from Code Owners"
-# 를 켜야 실제로 강제된다. CODEOWNERS 파일만으로는 아무 효력이 없다.
+#
+# 주의: 이 파일만으로는 아무 효력이 없다.
+# GitHub > Settings > Branches 에서 master 브랜치에 규칙을 추가하고
+#   - Require a pull request before merging
+#   - Require review from Code Owners
+# 둘 다 켜야 실제로 강제된다.
 
-/third_party/    @jsjin7371
-/tools/          @jsjin7371
-/docs/           @jsjin7371
-/calibration/    @jsjin7371
-/pyproject.toml  @jsjin7371
-/uv.lock         @jsjin7371
-/CODEOWNERS      @jsjin7371
+/third_party/       @jsjin7371
+/tools/             @jsjin7371
+/docs/              @jsjin7371
+/calibration/       @jsjin7371
+/pyproject.toml     @jsjin7371
+/uv.lock            @jsjin7371
+/.python-version    @jsjin7371
+/.gitignore         @jsjin7371
+/.gitattributes     @jsjin7371
+/CODEOWNERS         @jsjin7371
+/CONTRIBUTING.md    @jsjin7371
+/README.md          @jsjin7371
+/.github/           @jsjin7371
 
-# projects/ 는 의도적으로 비워둔다 — 팀원이 자유롭게 작업하는 구역.
+# 작업 양식 — 부원이 복사해서 쓰는 것이지 고치는 것이 아니다
+/projects/_TEMPLATE/    @jsjin7371
+/projects/README.md     @jsjin7371
+
+# projects/ 의 나머지는 의도적으로 비워 둔다 — 부원이 자유롭게 작업하는 구역.
