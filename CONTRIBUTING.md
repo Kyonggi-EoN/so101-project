@@ -105,15 +105,17 @@ feat/jsjin7371/hand-tracking   →   projects/03-hand-tracking/
 ```powershell
 git checkout master
 git pull                                        # 최신으로 맞추고
-git checkout -b feat/<깃허브-아이디>/<주제>      # 새 브랜치 만들기
+git checkout -b <종류>/<깃허브-아이디>/<주제>     # 새 브랜치 만들기
 ```
+
+아래에서 `<내-브랜치>` 는 방금 만든 이 이름을 가리킨다.
 
 작업하면서 중간중간 저장한다.
 
 ```powershell
 git add .
 git commit -m "<무엇을 했는지 한 줄>"
-git push -u origin feat/<깃허브-아이디>/<주제>   # 첫 푸시는 -u 를 붙인다
+git push -u origin <내-브랜치>                   # 첫 푸시는 -u 를 붙인다
 ```
 
 다음부터는 `git push` 만 하면 된다.
@@ -165,7 +167,7 @@ docs: 실행 방법에 준비물 목록 추가
 
 ```powershell
 git fetch
-git checkout feat/<브랜치-이름>        # 만든 사람에게 이름을 물어본다
+git checkout <브랜치-이름>             # 만든 사람에게 이름을 물어본다
 ```
 
 같은 브랜치에 여러 명이 푸시하므로, **푸시 전에 `git pull` 을 먼저 한다.**
@@ -177,7 +179,7 @@ git checkout feat/<브랜치-이름>        # 만든 사람에게 이름을 물�
 ```powershell
 git checkout master
 git pull
-git checkout feat/<깃허브-아이디>/<주제>     # 내 브랜치로 돌아와서
+git checkout <내-브랜치>                      # 내 브랜치로 돌아와서
 git merge master                             # master 내용을 합친다
 ```
 
@@ -205,7 +207,7 @@ git status
 
 ---
 
-## PR — 3단계를 통과해야 머지된다
+## PR — 검토를 통과해야 머지된다
 
 작업이 끝나면 GitHub 에서 `master` 로 Pull Request 를 연다.
 
@@ -248,7 +250,7 @@ git status
 
 ```powershell
 git fetch
-git checkout feat/<깃허브-아이디>/<주제>
+git checkout <확인할-브랜치>
 uv sync
 # 그 프로젝트 README 의 "실행 방법" 을 그대로 따라 한다
 ```
@@ -289,7 +291,7 @@ uv sync
 ```powershell
 git checkout master
 git pull
-git branch -d feat/<깃허브-아이디>/<주제>    # 내 컴퓨터에서도 삭제
+git branch -d <내-브랜치>                     # 내 컴퓨터에서도 삭제
 ```
 
 ---
