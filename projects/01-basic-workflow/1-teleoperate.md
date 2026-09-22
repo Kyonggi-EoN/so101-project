@@ -22,6 +22,18 @@
          --teleop.calibration_dir=calibration/teleoperators/so_leader
 -->
 
+> ### 📸 캡처 넣을 자리 — 카메라 번호 확인
+>
+> `images/find-cameras-output.png` 로 저장한다.
+>
+> - `lerobot-find-cameras opencv` 실행 후 `outputs\captured_images\` 를 연다
+> - 여러 이미지가 **번호와 함께 보이게** 탐색기 창을 캡처
+> - 어느 번호가 로봇 카메라인지 고르는 방법을 보여주는 것이 목적
+>
+> 저장한 뒤 아래 줄의 `<!--` 와 `-->` 를 지워서 살린다.
+
+<!-- ![lerobot-find-cameras 가 저장한 이미지들](images/find-cameras-output.png) -->
+
 ---
 
 ## 모터 등록과 캘리브레이션
