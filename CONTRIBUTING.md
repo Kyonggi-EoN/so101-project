@@ -185,7 +185,7 @@ git merge master                             # master 내용을 합친다
 | `outputs/` | 학습 결과. 파일 하나가 600MB 다 |
 | `*.mp4`, `*.parquet` | 녹화 데이터. Hugging Face 에 올린다 |
 | `.venv/` | `uv sync` 로 언제든 다시 만들어진다 |
-| `local.ps1` | 컴퓨터마다 다른 값(포트 번호 등) |
+| `local.ps1` | 포트 번호처럼 컴퓨터마다 다른 값을 적어 둔 개인 설정 파일 |
 | `*.pem`, `.env` | 비밀번호·열쇠 종류 |
 
 푸시하기 전에 뭐가 올라가는지 한 번 본다.

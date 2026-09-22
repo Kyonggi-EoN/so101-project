@@ -1,2 +1,0 @@
-# local.ps1 예시 — 복사해서 리포 루트에 두고 값만 자기 걸로 바꾼다
-#   Copy-Item projects-basic-workflow\local.ps1.example local.ps1
