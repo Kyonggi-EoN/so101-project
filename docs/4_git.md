@@ -139,7 +139,7 @@ git push
 **새 브랜치는 첫 push 때만 다르게 쓴다.**
 
 ```powershell
-git push -u origin feat/<깃허브-아이디>/<주제>
+git push -u origin <내-브랜치>
 ```
 
 `-u` 는 "이 브랜치는 GitHub 의 저 브랜치와 짝" 이라고 알려 주는 것이다. 한 번 해두면 다음부터는 `git push` 만 하면 된다.
@@ -167,7 +167,7 @@ master        ●───●───●─────────────
 
 ```powershell
 git branch                              # 지금 있는 브랜치 목록
-git checkout -b feat/<아이디>/<주제>      # 새로 만들고 그리로 이동
+git checkout -b <종류>/<아이디>/<주제>     # 새로 만들고 그리로 이동
 git checkout master                     # 기존 브랜치로 이동
 ```
 
