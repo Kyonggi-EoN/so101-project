@@ -7,6 +7,9 @@
 | `find-cameras-output.png` | 1-teleoperate.md | 카메라 번호 고르는 화면 |
 | `rerun-teleoperate.png` | 1-teleoperate.md | rerun 화면 |
 | `recording.png` | 2-record.md | 녹화 중 터미널 |
+| `aws-quota.png` | 4-train-cloud.md | GPU 한도 신청 화면 |
+| ~~`aws-paid-plan.png`~~ | 4-train-cloud.md | 요금제 전환 — **Free Plan 계정에서만 보임.** 새 계정 만드는 사람이 있으면 그때 |
+| `aws-ssh.png` | 4-train-cloud.md | SSH 접속 성공 |
 | `rollout.gif` | 5-inference.md | 스스로 움직이는 로봇 |
 
 각 문서의 **📸 캡처 넣을 자리** 에 무엇을 어떻게 찍는지 적혀 있다.
