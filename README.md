@@ -48,7 +48,8 @@ uv sync
 **`projects/` 안은 자유**, 나머지는 메인테이너가 관리한다.
 
 ```powershell
-git checkout -b feat/<깃허브-아이디>/<주제>
+git checkout -b feat/<깃허브-아이디>/<주제>     # 새 프로젝트
+git checkout -b docs/<깃허브-아이디>/<주제>     # 문서 수정
 ```
 
 작업이 끝나면 `master` 로 PR 을 연다. **3단계를 통과해야 머지된다.**
