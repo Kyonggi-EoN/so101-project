@@ -37,9 +37,11 @@ uv run lerobot-record `
 > 수정 요망
 
 > 우리가 촬영한 5~15초 짜리 영상 한 개 -> 에피소드
+>
 --dataset.episode_time_s=60 : 각 데이터 에피소드 recording 시간 (default: 60초)
 --dataset.reset_time_s=60 : 각 에피소드 recording 후, 환경 리셋 시간 (default: 60초).
 --dataset.num_episodes=50 : recording할 전체 에피소드 수 (default: 50).
+>
 > 각 에피소드를 다음과 같이 내가 설정할 수도 있지만 키보드 조작을 통해 할 수도 있다.
 
 오른쪽 화살표 누르기 (→): 현재 에피소드를 일찍 종료하거나 시간을 재설정하고 다음 에피소드로 넘어갑니다.
