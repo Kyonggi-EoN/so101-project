@@ -33,7 +33,8 @@ uv run lerobot-record `
     --dataset.push_to_hub=false `
     --resume=true
 
-``` > 수정 요망
+``` 
+> 수정 요망
 
 > 우리가 촬영한 5~15초 짜리 영상 한 개 -> 에피소드
 --dataset.episode_time_s=60 : 각 데이터 에피소드 recording 시간 (default: 60초)
