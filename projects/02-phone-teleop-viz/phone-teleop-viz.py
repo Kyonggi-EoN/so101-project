@@ -1,4 +1,7 @@
 
+from pprint import pprint
+import time
+
 from lerobot.lerobot_types import RobotAction, RobotObservation
 
 # phone library imports
@@ -30,8 +33,16 @@ def main():
     teleop_device = Phone(teleop_config)
 
     # loading the robot
-    robot = placo.RobotWrapper("projects/02-phone-teleop-viz/urdf/so101_calib.urdf", placo.Flags.ignore_collision)
+    urdf_path = "projects/02-phone-teleop-viz/so101-description/so101_new_calib.urdf"
+    robot = placo.RobotWrapper(urdf_path, placo.Flags.ignore_collisions)
 
-    # Creating the solver
-    solver = placo.KinematicsSolver(robot)
-    solver.mask_fbase(True)  # Fix the base
+    # Connecting the phone
+    teleop_device.connect()
+
+    while True:
+        phone_obs = teleop_device.get_action()
+        pprint(phone_obs)  
+        time.sleep(0.5)  # Add a small delay to avoid overwhelming the output
+
+
+main()
