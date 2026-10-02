@@ -20,11 +20,9 @@ else:
     except ImportError as _placo_import_err:
         _placo_runtime_error = _placo_import_err
         raise ImportError(
-                    f"placo is installed but failed to import: {_placo_runtime_error!s}"
+                    f"uv sync --extra placo-dep --extra phone"
+                    # f"placo is installed but failed to import: {_placo_runtime_error!s}"
                 ) from _placo_runtime_error
-
-
-FPS = 30
 
 def main():
     #phone teleop config
@@ -32,7 +30,7 @@ def main():
     teleop_device = Phone(teleop_config)
 
     # loading the robot
-    robot = placo.RobotWrapper("path/to/urdf/file.urdf", placo.Flags.ignore_collision)
+    robot = placo.RobotWrapper("projects/02-phone-teleop-viz/urdf/so101_calib.urdf", placo.Flags.ignore_collision)
 
     # Creating the solver
     solver = placo.KinematicsSolver(robot)
