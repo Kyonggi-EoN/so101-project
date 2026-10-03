@@ -13,6 +13,7 @@ from lerobot.teleoperators.phone.phone_processor import MapPhoneActionToRobotAct
 from lerobot.utils.rotation import Rotation
 import pinocchio as pin
 import numpy as np
+import placo_utils.visualization
 
 _placo_runtime_error: ImportError | None = None
 
@@ -46,9 +47,6 @@ def main():
     # loading the robot
     urdf_path = "projects/02-phone-teleop-viz/so101-description/so101_new_calib.urdf"
     robot = placo.RobotWrapper(urdf_path, placo.Flags.ignore_collisions)
-    
-    # Connecting the phone
-    teleop_device.connect()
 
     # phone -> robot action mapping changer
     phone_to_robot = MapPhoneActionToRobotAction(platform=teleop_config.phone_os)
@@ -59,6 +57,14 @@ def main():
 
     ee_task = solver.add_frame_task("gripper_frame_link", np.eye(4))
     ee_task.configure("gripper_frame_link", "soft", 0.5, 0.01)
+
+
+    # creating the robot viz
+    viz = placo_utils.visualization.robot_viz(robot)
+        
+    # Connecting the phone
+    teleop_device.connect()
+
 
     # variable to keep track of the enabled state and the current robot pose
     isEnabled = False
@@ -121,6 +127,8 @@ def main():
         print(f"actual robot pose  : {format_pose(actual_pose)}")
         print("\033[J", end="", flush=True)
         
+        viz.display(robot.state.q)
+        placo_utils.visualization.robot_frame_viz(robot, "gripper_frame_link")
 
         time.sleep(0.1)  # Add a small delay to avoid overwhelming the output
     
