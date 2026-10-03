@@ -57,6 +57,10 @@ def main():
     solver = placo.KinematicsSolver(robot)
     solver.mask_fbase(True)
 
+    ee_task = solver.add_frame_task("gripper_frame_link", np.eye(4))
+    ee_task.configure("gripper_frame_link", "soft", 0.5, 0.01)
+
+    # variable to keep track of the enabled state and the current robot pose
     isEnabled = False
     current_robot_pose = None
     new_robot_pose = robot.get_T_world_frame("gripper_frame_link")
@@ -97,17 +101,28 @@ def main():
 
         isEnabled = action["enabled"]
 
+        ee_task.T_world_frame = new_robot_pose  # Update the task with the new pose
+        
+        #  solving the IK
+        solver.solve(True)
+
+        # update pose of the robot's end-effector
+        robot.update_kinematics()
+
+        # Get the actual pose for log
+        actual_pose = robot.get_T_world_frame("gripper_frame_link")
 
         # print log (제자리 갱신: 커서를 맨 위로 → 출력 → 남은 아래쪽 지우기)
-        print("\033[H", end="")
-        print(f"enabled            : {action['enabled']!s:<5}   gripper_vel: {action['gripper_vel']:+.1f}")
+        print("\033[H\n", end="")
+        print(f"enabled            : {action['enabled']!s:<5}   \ngripper_vel: {action['gripper_vel']:+.1f}")
         print(f"phone delta        : {format_pose(phone_delta)}")
         print(f"current robot pose : {format_pose(current_robot_pose)}")
         print(f"new robot pose     : {format_pose(new_robot_pose)}")
+        print(f"actual robot pose  : {format_pose(actual_pose)}")
         print("\033[J", end="", flush=True)
+        
 
-
-        time.sleep(0.2)  # Add a small delay to avoid overwhelming the output
+        time.sleep(0.1)  # Add a small delay to avoid overwhelming the output
     
 
 main()
