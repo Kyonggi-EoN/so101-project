@@ -13,6 +13,10 @@ from lerobot.teleoperators.phone.config_phone import PhoneOS
 
 from typing import TYPE_CHECKING
 
+from lerobot.teleoperators.phone.phone_processor import MapPhoneActionToRobotAction
+import pinocchio as pin
+import numpy as np
+
 _placo_runtime_error: ImportError | None = None
 
 if TYPE_CHECKING:
@@ -39,10 +43,21 @@ def main():
     # Connecting the phone
     teleop_device.connect()
 
+    # phone -> robot action mapping changer
+    phone_to_robot = MapPhoneActionToRobotAction(platform=teleop_config.phone_os)
+
     while True:
         phone_obs = teleop_device.get_action()
         pprint(phone_obs)  
-        time.sleep(0.5)  # Add a small delay to avoid overwhelming the output
 
+        
+        action = phone_to_robot.action(phone_obs)
+        t = pin.exp6(np.array([action["target_x"], action["target_y"], action["target_z"], 0.0, 0.0, 0.0])) 
+        r = pin.exp6(np.array([0.0, 0.0, 0.0, action["target_wx"], action["target_wy"], action["target_wz"]]))  
+        new_pose = np.array(t * r)  # Combine translation and rotation
+        pprint(new_pose)
+
+        time.sleep(1)  # Add a small delay to avoid overwhelming the output
+    
 
 main()
