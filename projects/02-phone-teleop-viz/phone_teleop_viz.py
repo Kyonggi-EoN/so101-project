@@ -14,13 +14,14 @@ import time
 
 
 # phone library imports
-from lerobot.robots.so_follower.robot_kinematic_processor import EEReferenceAndDelta
+from lerobot.robots.so_follower.robot_kinematic_processor import EEBoundsAndSafety, EEReferenceAndDelta
 from lerobot.teleoperators.phone import Phone, PhoneConfig
 from lerobot.teleoperators.phone.config_phone import PhoneOS
 
 from typing import TYPE_CHECKING
 
 from lerobot.teleoperators.phone.phone_processor import MapPhoneActionToRobotAction
+from lerobot.utils.robot_utils import precise_sleep
 from lerobot.utils.rotation import Rotation
 import pinocchio as pin
 import numpy as np
@@ -39,6 +40,8 @@ else:
                     f"uv sync --extra placo-dep --extra phone"
                     # f"placo is installed but failed to import: {_placo_runtime_error!s}"
                 ) from _placo_runtime_error
+
+FPS = 30.0
 
 def format_pose(T: np.ndarray | None) -> str:
     """4x4 자세를 'pos [x y z]  rot [wx wy wz]' 한 줄로. 위치는 m, 회전은 회전 벡터(rad)."""
@@ -72,9 +75,15 @@ def main():
     solver = placo.KinematicsSolver(robot)
     solver.mask_fbase(True)
     solver.add_regularization_task(0.000001) # task 정규화
+    solver.enable_velocity_limits(True)
+    solver.dt = 1 / FPS
 
     ee_task = solver.add_frame_task("gripper_frame_link", np.eye(4))
     ee_task.configure("gripper_frame_link", "soft", 0.5, 0.01)
+
+    # robot bounds and safety
+    ee_bounds = {"min": [-1.0, -1.0, -1.0], "max": [1.0, 1.0, 1.0]}  # end-effector bounds
+    max_ee_step = 0.05
 
     # creating the robot viz
     viz = placo_utils.visualization.robot_viz(robot)
@@ -115,6 +124,7 @@ def main():
     if args.log == "terminal":
         print("\033[2J", end="")  # 화면 전체 지우기 (연결 메시지 정리)
     while True:
+        t0 = time.perf_counter()
 
         # Get the latest action (phone or keyboard)
         action = read_action()
@@ -171,7 +181,6 @@ def main():
         viz.display(robot.state.q)
         placo_utils.visualization.robot_frame_viz(robot, "gripper_frame_link")
 
-        time.sleep(0.01)  # Add a small delay to avoid overwhelming the output
-    
+        precise_sleep(max (1.0 / FPS - (time.perf_counter() - t0), 0.0))
 
 main()
