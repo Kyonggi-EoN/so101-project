@@ -54,10 +54,10 @@ def main():
     # Creating the solver
     solver = placo.KinematicsSolver(robot)
     solver.mask_fbase(True)
+    solver.add_regularization_task(0.000001) # task 정규화
 
     ee_task = solver.add_frame_task("gripper_frame_link", np.eye(4))
     ee_task.configure("gripper_frame_link", "soft", 0.5, 0.01)
-
 
     # creating the robot viz
     viz = placo_utils.visualization.robot_viz(robot)
@@ -65,11 +65,12 @@ def main():
     # Connecting the phone
     teleop_device.connect()
 
-
     # variable to keep track of the enabled state and the current robot pose
     isEnabled = False
     current_robot_pose = None
     new_robot_pose = robot.get_T_world_frame("gripper_frame_link")
+
+    placo_utils.visualization.frame_viz("world", np.eye(4))
 
     # Main loop
     print("\033[2J", end="")  # 화면 전체 지우기 (연결 메시지 정리)
@@ -130,7 +131,7 @@ def main():
         viz.display(robot.state.q)
         placo_utils.visualization.robot_frame_viz(robot, "gripper_frame_link")
 
-        time.sleep(0.1)  # Add a small delay to avoid overwhelming the output
+        time.sleep(0.01)  # Add a small delay to avoid overwhelming the output
     
 
 main()
