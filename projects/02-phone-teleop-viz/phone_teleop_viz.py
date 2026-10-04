@@ -82,7 +82,7 @@ def main():
     ee_task.configure("gripper_frame_link", "soft", 0.5, 0.01)
 
     # robot bounds and safety
-    ee_bounds = {"min": [-1.0, -1.0, -1.0], "max": [1.0, 1.0, 1.0]}  # end-effector bounds
+    ee_bounds = {"min": [0.0, -0.3, 0.0], "max": [0.3, 0.3, 0.3]}  # end-effector bounds
     max_ee_step = 0.05
 
     # creating the robot viz
@@ -117,6 +117,7 @@ def main():
     isEnabled = False
     current_robot_pose = None
     new_robot_pose = robot.get_T_world_frame("gripper_frame_link")
+    last_robot_pose = new_robot_pose.copy()
 
     placo_utils.visualization.frame_viz("world", np.eye(4))
 
@@ -158,6 +159,20 @@ def main():
         # Apply bounds to the position
         new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], ee_bounds["min"], ee_bounds["max"])  
 
+        # 한 스텝당 최대 이동량 제한
+        dpos = last_robot_pose[:3, 3] - new_robot_pose[:3, 3]
+        n = float(np.linalg.norm(dpos))
+        if n > max_ee_step:
+            dpos = dpos / n * max_ee_step
+            new_robot_pose[:3, 3] = last_robot_pose[:3, 3] - dpos
+            print(
+                "EE jump %.3fm > %.3fm; rate-limited to the per-frame step "
+                "(likely a transient tracking glitch; if it recurs every frame "
+                "the commanded target is systematically out of workspace).",
+                n,
+                max_ee_step,
+            )
+
         # Update the task with the new pose
         ee_task.T_world_frame = new_robot_pose
         
@@ -169,6 +184,9 @@ def main():
 
         # Get the actual pose for log
         actual_pose = robot.get_T_world_frame("gripper_frame_link")
+
+        # Update the last_robot_pose for the next iteration
+        last_robot_pose = new_robot_pose.copy()
 
         if args.log == "rerun":
             logger.log(action, phone_delta, current_robot_pose, new_robot_pose, actual_pose)
