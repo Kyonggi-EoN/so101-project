@@ -155,7 +155,11 @@ def main():
 
         isEnabled = action["enabled"]
 
-        ee_task.T_world_frame = new_robot_pose  # Update the task with the new pose
+        # Apply bounds to the position
+        new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], ee_bounds["min"], ee_bounds["max"])  
+
+        # Update the task with the new pose
+        ee_task.T_world_frame = new_robot_pose
         
         #  solving the IK
         solver.solve(True)
