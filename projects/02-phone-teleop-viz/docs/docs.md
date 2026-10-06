@@ -91,3 +91,24 @@ New-NetFirewallHyperVRule -Name "WSL-teleop-4443" -DisplayName "WSL phone teleop
 
 - 핸드폰은 PC 와 **같은 Wi-Fi** (모바일 데이터 X)
 - 인증서 경고는 정상 (teleop 자체 서명 인증서, WebXR 이 https 필수) → "고급 → 계속 진행"
+
+## 6. rerun 포트 충돌
+
+증상: `--log rerun` 으로 실행하면
+
+```
+RuntimeError: Failed to create server: Address already in use (os error 98): (0.0.0.0:9090)
+```
+
+원인: 9090 포트를 다른 프로그램이 이미 쓰고 있음. 우분투 서버는 기본으로 깔린 서버 관리 웹 화면 **Cockpit**(`cockpit.socket`)이 9090 을 쓴다. 방화벽 문제가 아니므로 포트를 열어도 해결되지 않음
+
+`phone_teleop_viz.py` 에서 `DebugLogger` 의 `web_port` 인자를 빈 포트로 바꾼다
+
+```python
+logger = DebugLogger(web_port=<빈 포트>)
+# 예
+logger = DebugLogger(web_port=9091)
+```
+
+- 누가 쓰는지 확인: `ss -ltnp | grep 9090` (이름이 안 나오면 `systemctl list-sockets | grep 9090`)
+- 원격(VS Code Remote-SSH)이면 포트 탭에서 바꾼 포트를 포워딩. 브라우저 주소도 `http://localhost:<빈 포트>/?url=...` 로 바뀐다 (실행 시 터미널에 출력됨)

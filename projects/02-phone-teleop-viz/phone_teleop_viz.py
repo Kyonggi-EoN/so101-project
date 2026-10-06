@@ -109,7 +109,7 @@ def main():
     logger = None
     if args.log == "rerun":
         from test_src.debug_log import DebugLogger
-        logger = DebugLogger()
+        logger = DebugLogger(web_port=9091)
 
     # ── ①② 입력 소스 설정 ─────────────────────────────────────
     # 둘 다 같은 모양의 action dict (enabled, target_x..wz, gripper_vel) 를 돌려준다
