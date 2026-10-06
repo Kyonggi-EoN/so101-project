@@ -92,6 +92,22 @@ New-NetFirewallHyperVRule -Name "WSL-teleop-4443" -DisplayName "WSL phone teleop
 - 핸드폰은 PC 와 **같은 Wi-Fi** (모바일 데이터 X)
 - 인증서 경고는 정상 (teleop 자체 서명 인증서, WebXR 이 https 필수) → "고급 → 계속 진행"
 
+### 5-4. 우분투(리눅스)에서 실행할 때
+
+5-1, 5-2 는 WSL 전용. 우분투에서는 방화벽(ufw)만 확인한다
+
+증상: 같은 Wi-Fi 인데 핸드폰에서 `https://<PC IP>:4443` 접속이 안 됨
+원인: ufw 가 켜져 있으면 들어오는 연결을 기본 차단
+
+```bash
+sudo ufw allow 4443/tcp
+sudo ufw status          # 4443/tcp ALLOW 가 보이면 됨
+```
+
+- PC IP 확인: `ip -4 -br addr` → `192.168.0.x` 형태의 주소
+  - 예: `https://192.168.0.8:4443`
+- 서버 자체는 떠 있는지 확인: `ss -ltnp | grep 4443` → `0.0.0.0:4443` 이 보이면 정상
+
 ## 6. rerun 포트 충돌
 
 증상: `--log rerun` 으로 실행하면
