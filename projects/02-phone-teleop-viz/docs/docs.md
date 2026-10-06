@@ -112,3 +112,4 @@ logger = DebugLogger(web_port=9091)
 
 - 누가 쓰는지 확인: `ss -ltnp | grep 9090` (이름이 안 나오면 `systemctl list-sockets | grep 9090`)
 - 원격(VS Code Remote-SSH)이면 포트 탭에서 바꾼 포트를 포워딩. 브라우저 주소도 `http://localhost:<빈 포트>/?url=...` 로 바뀐다 (실행 시 터미널에 출력됨)
+- (원격만 해당) rerun 화면은 뜨는데 **그래프가 비어 있으면** 9876 포워딩 확인. rerun 은 화면(`web_port`)과 데이터(9876)를 다른 포트로 보내고, 브라우저가 노트북의 `127.0.0.1:9876` 으로 데이터를 받으러 간다. 같은 PC 에서 돌리면 해당 없음
