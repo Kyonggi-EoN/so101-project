@@ -92,7 +92,31 @@ class IKSolver:
         self.ee_task.T_world_frame = target_pose
         self.solver.solve(True)
         self.robot.update_kinematics()
-    
+
+class PhoneToTargetPose:
+    def __init__(self, robot: placo.RobotWrapper):
+        self.isEnabled = False
+        self.current_robot_pose = robot.get_T_world_frame(EE_FRAME)
+        self.new_robot_pose = robot.get_T_world_frame(EE_FRAME)
+        self.phone_delta = np.eye(4)
+
+    def update(self, robot: placo.RobotWrapper, action: dict):
+        t = pin.exp6(np.array([action["target_x"], action["target_y"], action["target_z"], 0.0, 0.0, 0.0]))
+        r = pin.exp6(np.array([0.0, 0.0, 0.0, action["target_wx"], action["target_wy"], action["target_wz"]]))
+        self.phone_delta = np.array(t*r)
+
+        if action["enabled"]:
+            if not self.isEnabled:
+                # Store the current pose when enabled is first pressed
+                self.current_robot_pose = robot.get_T_world_frame(EE_FRAME)  # Get the current pose of the robot's end-effector
+        
+            self.new_robot_pose = self.current_robot_pose @ np.array(r)
+            self.new_robot_pose[:3, 3] = self.new_robot_pose[:3, 3] + np.array(t)[:3, 3] 
+
+        self.isEnabled = action["enabled"]
+        return self.new_robot_pose
+
+
 
 def main():
     args = parse_args()
@@ -133,13 +157,12 @@ def main():
         read_action = keyboard.get_action
 
     # ── ④ 클러치 상태 ─────────────────────────────────────────
-    isEnabled = False
-    current_robot_pose = None
-    new_robot_pose = robot.get_T_world_frame(EE_FRAME)
+    phone_to_target = PhoneToTargetPose(robot)
+    
 
     # ── 안전 장치 상태 ─────────────────────────────────────────
     ee_bounds = {"min": [0.0, -0.3, 0.0], "max": [0.3, 0.3, 0.3]}  # end-effector bounds
-    last_robot_pose = new_robot_pose.copy()
+    last_robot_pose = phone_to_target.current_robot_pose.copy()
 
     # ── Main loop ────────────────────────────────────────────
     if args.log == "terminal":
@@ -151,26 +174,7 @@ def main():
         action = read_action()
 
         # ── ③ 변화량 ──
-        t = pin.exp6(np.array([action["target_x"], action["target_y"], action["target_z"], 0.0, 0.0, 0.0]))
-        r = pin.exp6(np.array([0.0, 0.0, 0.0, action["target_wx"], action["target_wy"], action["target_wz"]]))
-        phone_delta = np.array(t * r)  # Combine translation and rotation
-
-        # ── ④ 클러치 → 목표 자세 ──
-        # p + Δp 방법 사용, p + R·Δp는 테스트 예정
-        if action["enabled"]:
-            if not isEnabled:
-                # Store the current pose when enabled is first pressed
-                current_robot_pose = robot.get_T_world_frame(EE_FRAME)  # Get the current pose of the robot's end-effector
-
-            new_robot_pose = current_robot_pose @ np.array(r)   # 회전 행렬곱
-            new_robot_pose[:3, 3] = new_robot_pose[:3, 3] + np.array(t)[:3, 3] # 위치 이동
-
-        else:
-            if isEnabled:
-                # When the button is released, maintain the last pose
-                current_robot_pose = robot.get_T_world_frame(EE_FRAME)
-
-        isEnabled = action["enabled"]
+        new_robot_pose = phone_to_target.update(robot,action)
 
         # ── 안전 장치: 공간 제한 → 최대 이동량 ──
         new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], ee_bounds["min"], ee_bounds["max"])
@@ -183,7 +187,7 @@ def main():
         actual_pose = robot.get_T_world_frame(EE_FRAME)
 
         # ── ⑥ 로그 · 시각화 ──
-        print_log(logger, args, action, phone_delta, current_robot_pose, new_robot_pose, actual_pose)
+        print_log(logger, args, action, phone_to_target.phone_delta ,phone_to_target.current_robot_pose, new_robot_pose, actual_pose)
         show(viz, robot)
 
         precise_sleep(max (1.0 / FPS - (time.perf_counter() - t0), 0.0))
