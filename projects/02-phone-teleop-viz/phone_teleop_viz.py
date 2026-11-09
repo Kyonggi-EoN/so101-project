@@ -76,6 +76,27 @@ def show(viz, robot):
     viz.display(robot.state.q)
     placo_utils.visualization.robot_frame_viz(robot, EE_FRAME)
 
+def make_action_source(source: str):
+    # 둘 다 같은 모양의 action dict (enabled, target_x..wz, gripper_vel) 를 돌려준다
+        if source == "phone":
+            #phone teleop config
+            teleop_config = PhoneConfig(phone_os = PhoneOS.ANDROID)
+            teleop_device = Phone(teleop_config)
+    
+            # phone -> robot action mapping changer
+            phone_to_robot = MapPhoneActionToRobotAction(platform=teleop_config.phone_os)
+    
+            # Connecting the phone (캘리브레이션 터치까지 여기서 기다린다)
+            teleop_device.connect()
+    
+            def read_action():
+                return phone_to_robot.action(teleop_device.get_action())
+        
+        else:
+            from test_src.keyboard_ik_viz import KeyboardSource
+            keyboard = KeyboardSource()
+            return keyboard.get_action
+
 class IKSolver:
     def __init__(self, robot: placo.RobotWrapper):
         self.robot = robot
@@ -117,7 +138,6 @@ class PhoneToTargetPose:
         return self.new_robot_pose
 
 
-
 def main():
     args = parse_args()
 
@@ -125,7 +145,7 @@ def main():
     robot = placo.RobotWrapper(URDF_PATH, placo.Flags.ignore_collisions)
     iksolver = IKSolver(robot)
 
-    # ── ⑥ 시각화 · 로그 설정 ──────────────────────────────────
+    # ── 시각화 · 로그 설정 ──────────────────────────────────
     # 시각화는 입력 소스보다 먼저 (핸드폰 connect() 가 캘리브레이션 터치까지 멈추므로 브라우저를 먼저 열어 둔다)
     viz = placo_utils.visualization.robot_viz(robot)
     placo_utils.visualization.frame_viz("world", np.eye(4))
@@ -136,25 +156,7 @@ def main():
         logger = DebugLogger(web_port=9091)
 
     # ── ①② 입력 소스 설정 ─────────────────────────────────────
-    # 둘 다 같은 모양의 action dict (enabled, target_x..wz, gripper_vel) 를 돌려준다
-    if args.source == "phone":
-        #phone teleop config
-        teleop_config = PhoneConfig(phone_os = PhoneOS.ANDROID)
-        teleop_device = Phone(teleop_config)
-
-        # phone -> robot action mapping changer
-        phone_to_robot = MapPhoneActionToRobotAction(platform=teleop_config.phone_os)
-
-        # Connecting the phone (캘리브레이션 터치까지 여기서 기다린다)
-        teleop_device.connect()
-
-        def read_action():
-            phone_obs = teleop_device.get_action()
-            return phone_to_robot.action(phone_obs)
-    else:
-        from test_src.keyboard_ik_viz import KeyboardSource
-        keyboard = KeyboardSource()
-        read_action = keyboard.get_action
+    read_action = make_action_source(args.source)
 
     # ── ④ 클러치 상태 ─────────────────────────────────────────
     phone_to_target = PhoneToTargetPose(robot)
