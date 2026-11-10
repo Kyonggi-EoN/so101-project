@@ -27,6 +27,7 @@ import placo
 
 FPS = 30.0
 MAX_EE_STEP = 0.05  # end-effector 한 스텝당 최대 이동량 (m)
+MAX_JOINT_VELOCITY = 1.0  # 관절 최대 속도 (rad/s, 약 57°/s). URDF 기본 10 rad/s 는 너무 빠름
 EE_BOUNDS = {"min": [0.0, -0.3, 0.0], "max": [0.3, 0.3, 0.3]}  # end-effector 작업 공간 제한 (m)
 REGULARIZATION_WEIGHT = 0.000001  # task 정규화 가중치
 URDF_PATH = "projects/02-phone-teleop-viz/so101-description/so101_new_calib.urdf"
@@ -108,6 +109,7 @@ class IKSolver:
         self.solver = placo.KinematicsSolver(robot)
         self.solver.mask_fbase(True)
         self.solver.add_regularization_task(REGULARIZATION_WEIGHT) # task 정규화
+        self.robot.set_velocity_limits(MAX_JOINT_VELOCITY)  # 모든 관절에 같은 값
         self.solver.enable_velocity_limits(True)
         self.solver.dt = 1 / FPS
 
