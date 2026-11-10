@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from phone_teleop_viz import PHONE_POSITION_SCALE as S, OrientationClutch, phone_to_robot_action  # noqa: E402
+from phone_teleop_viz import PHONE_POSITION_SCALE as S, PHONE_ROTATION_SCALE as SR, OrientationClutch, phone_to_robot_action  # noqa: E402
 from lerobot.teleoperators.phone.config_phone import PhoneOS  # noqa: E402
 from lerobot.teleoperators.phone.phone_processor import MapPhoneActionToRobotAction  # noqa: E402
 from lerobot.utils.rotation import Rotation  # noqa: E402
@@ -48,9 +48,9 @@ assert np.allclose([b["target_x"], b["target_y"]], [0, 0.1 * S], atol=1e-9), b
 c = OrientationClutch()
 a = run(c, phone(True, [0, 0, 0], tilt30))
 assert np.allclose([a["target_wx"], a["target_wy"], a["target_wz"]], 0, atol=1e-9), a
-# 거기서 10° 더 기울이면 회전 목표는 10° 만
+# 거기서 10° 더 기울이면 회전 목표는 10° 만 (× 회전 배율)
 a = run(c, phone(True, [0, 0, 0], Rotation.from_rotvec([np.deg2rad(40), 0, 0])))
-assert np.isclose(np.linalg.norm([a["target_wx"], a["target_wy"], a["target_wz"]]), np.deg2rad(10)), a
+assert np.isclose(np.linalg.norm([a["target_wx"], a["target_wy"], a["target_wz"]]), np.deg2rad(10) * SR), a
 
 # 3. 손 뗐다가 다른 방향으로 다시 누르면 기준이 새로 잡힘
 run(c, phone(False, [0, 0, 0], tilt30))

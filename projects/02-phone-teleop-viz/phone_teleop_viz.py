@@ -27,6 +27,7 @@ import placo
 
 FPS = 30.0
 MAX_EE_STEP = 0.05  # end-effector 한 스텝당 최대 이동량 (m)
+PHONE_ROTATION_SCALE = 0.2  # 핸드폰 회전 × 0.2 = 그리퍼 회전. 1:1 이면 손목이 관절 한계에 붙음 (녹화 재생: 붙은 시간 46% → 2%)
 PHONE_POSITION_SCALE = 0.4  # 핸드폰 이동량 × 0.4 = 로봇 이동량. 1:1 이면 손(0.5~1.8m)이 로봇 도달(0.37m)보다 훨씬 커서 범위 끝에 붙음 (lerobot 예제 0.5)
 MAX_JOINT_VELOCITY = 2.0  # 관절 최대 속도 (rad/s, 약 170°/s). 1.0 은 조작감이 너무 느림, URDF 기본 10 은 너무 빠름
 EE_BOUNDS = {"min": [0.0, -1.0, 0.05], "max": [1.0, 1.0, 1.0]}  # 작업 공간 (m). 바닥 z ≥ 5cm(책상 여유), 뒤 x ≥ 0 만 막고 나머지는 팔 도달 구가 정함
@@ -118,7 +119,8 @@ def phone_to_robot_action(phone_to_robot: MapPhoneActionToRobotAction, phone_act
     if action["enabled"]:  # 손 떼면 lerobot 이 0 으로 둔 값 그대로
         action.update(target_x=pos[0] * PHONE_POSITION_SCALE, target_y=pos[1] * PHONE_POSITION_SCALE,
                       target_z=pos[2] * PHONE_POSITION_SCALE,
-                      target_wx=rotvec[0], target_wy=rotvec[1], target_wz=rotvec[2])
+                      target_wx=rotvec[0] * PHONE_ROTATION_SCALE, target_wy=rotvec[1] * PHONE_ROTATION_SCALE,
+                      target_wz=rotvec[2] * PHONE_ROTATION_SCALE)
     return action
 
 def make_action_source(source: str):
