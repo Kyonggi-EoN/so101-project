@@ -105,6 +105,18 @@ class OrientationClutch:
             phone_action["phone.rot"] = self.press_rot_inv * phone_action["phone.rot"]
         return phone_action
 
+def phone_to_robot_action(phone_to_robot: MapPhoneActionToRobotAction, phone_action: dict) -> dict:
+    """핸드폰 축 → 로봇 축. 들고 있는 자세: 평평하게(화면 위), 핸드폰 위쪽 끝 = 앞.
+    핸드폰으로 확인 (2026-11-10): 핸드폰 축이 이미 로봇 축과 같다 → 변환 없이 그대로
+    (teleop 패키지가 핸드폰 값을 FLU = 앞(x)·왼쪽(y)·위(z) 로 바꿔서 줌. 로봇 축도 x 앞, y 왼쪽, z 위)
+    lerobot 매핑(x = -y, y = x)은 이 자세에서 앞뒤가 좌우로 가서 위치·회전만 덮어쓴다. enabled, gripper_vel 은 lerobot 그대로"""
+    pos, rotvec = phone_action["phone.pos"], phone_action["phone.rot"].as_rotvec()  # lerobot 이 phone.* 를 pop 하므로 먼저 꺼냄
+    action = phone_to_robot.action(phone_action)
+    if action["enabled"]:  # 손 떼면 lerobot 이 0 으로 둔 값 그대로
+        action.update(target_x=pos[0], target_y=pos[1], target_z=pos[2],
+                      target_wx=rotvec[0], target_wy=rotvec[1], target_wz=rotvec[2])
+    return action
+
 def make_action_source(source: str):
     # 둘 다 같은 모양의 action dict (enabled, target_x..wz, gripper_vel) 를 돌려준다
         if source == "phone":
@@ -121,7 +133,7 @@ def make_action_source(source: str):
             orientation_clutch = OrientationClutch()
 
             def read_action():
-                return phone_to_robot.action(orientation_clutch.apply(teleop_device.get_action()))
+                return phone_to_robot_action(phone_to_robot, orientation_clutch.apply(teleop_device.get_action()))
             return read_action
         
         else:
