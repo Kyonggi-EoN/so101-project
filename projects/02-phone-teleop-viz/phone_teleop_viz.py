@@ -165,6 +165,18 @@ class IKSolver:
         self.solver.solve(True)
         self.robot.update_kinematics()
 
+def clip_workspace(pos: np.ndarray) -> np.ndarray:
+    """위치(3개)를 작업 공간 안으로: 상자(바닥·뒤) → 팔이 닿는 구"""
+    # Clip the end-effector position to the defined bounds
+    pos = np.clip(pos, EE_BOUNDS["min"], EE_BOUNDS["max"])
+
+    # 팔이 닿는 거리 안으로: 어깨 중심에서 너무 멀면 같은 방향으로 REACH_RADIUS 까지만
+    d = pos - SHOULDER_CENTER # 어깨 중심에서 EE가 떨어진 길이 배열
+    n = np.linalg.norm(d) # EE와 어깨 중심 사이의 거리 √(x² + y² + z²)
+    if n > REACH_RADIUS:
+        pos = SHOULDER_CENTER + d / n * REACH_RADIUS # 어깨 중심 위치 + 단위 백터 * 최대 반지름 = 최대 도달 위치
+    return pos
+
 class PhoneToTargetPose:
     def __init__(self, robot: placo.RobotWrapper):
         self.isEnabled = False
@@ -185,6 +197,13 @@ class PhoneToTargetPose:
             self.new_robot_pose = self.current_robot_pose @ np.array(r)
             self.new_robot_pose[:3, 3] = self.new_robot_pose[:3, 3] + np.array(t)[:3, 3] 
 
+            # 벽(작업 공간 끝)에서 멈추고, 넘친 만큼은 버린다: 넘친 양만큼 기준을 같이 옮김
+            # (= 손 총 이동량에서 넘친 양을 뺀 것과 같음. 안 하면 넘친 만큼 되돌아와야 로봇이 움직임)
+            # 예: 벽까지 10cm, 손 30cm → 로봇 10cm, 기준 -20cm. 손 5cm 되돌림 → -20 + 25 = 5 → 바로 5cm 돌아옴
+            clipped = clip_workspace(self.new_robot_pose[:3, 3])
+            self.current_robot_pose[:3, 3] += clipped - self.new_robot_pose[:3, 3]
+            self.new_robot_pose[:3, 3] = clipped
+
         self.isEnabled = action["enabled"]
         return self.new_robot_pose
 
@@ -193,14 +212,7 @@ class SafetyFilter:
         self.last_robot_pose = start_pose.copy()  # 첫 프레임도 최대 이동량 비교 (시작 자세가 범위 밖이어도 5cm 씩)
 
     def apply(self, new_robot_pose: np.ndarray) -> np.ndarray:
-        # Clip the end-effector position to the defined bounds
-        new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], EE_BOUNDS["min"], EE_BOUNDS["max"])
-
-        # 팔이 닿는 거리 안으로: 어깨 중심에서 너무 멀면 같은 방향으로 REACH_RADIUS 까지만
-        d = new_robot_pose[:3, 3] - SHOULDER_CENTER # 어깨 중심에서 EE가 떨어진 길이 배열
-        n = np.linalg.norm(d) # EE와 어깨 중심 사이의 거리 √(x² + y² + z²)
-        if n > REACH_RADIUS:
-            new_robot_pose[:3, 3] = SHOULDER_CENTER + d / n * REACH_RADIUS # 어깨 중심 위치 + 단위 백터 * 최대 반지름 = 최대 도달 위치
+        new_robot_pose[:3, 3] = clip_workspace(new_robot_pose[:3, 3])
 
         # Limit the step size based on the last robot pose
         new_robot_pose[:3, 3] = limit_step(self.last_robot_pose[:3, 3], new_robot_pose[:3, 3])
