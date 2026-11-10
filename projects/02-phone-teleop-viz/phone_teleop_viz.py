@@ -26,6 +26,7 @@ import placo
 
 FPS = 30.0
 MAX_EE_STEP = 0.05  # end-effector 한 스텝당 최대 이동량 (m)
+EE_BOUNDS = {"min": [0.0, -0.3, 0.0], "max": [0.3, 0.3, 0.3]}  # end-effector 작업 공간 제한 (m)
 REGULARIZATION_WEIGHT = 0.000001  # task 정규화 가중치
 URDF_PATH = "projects/02-phone-teleop-viz/so101-description/so101_new_calib.urdf"
 EE_FRAME = "gripper_frame_link"
@@ -139,13 +140,12 @@ class PhoneToTargetPose:
         return self.new_robot_pose
 
 class SafetyFilter:
-    def __init__(self, ee_bounds: dict, start_pose: np.ndarray):
-        self.ee_bounds = ee_bounds
+    def __init__(self, start_pose: np.ndarray):
         self.last_robot_pose = start_pose.copy()  # 첫 프레임도 최대 이동량 비교 (시작 자세가 범위 밖이어도 5cm 씩)
 
     def apply(self, new_robot_pose: np.ndarray) -> np.ndarray:
         # Clip the end-effector position to the defined bounds
-        new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], self.ee_bounds["min"], self.ee_bounds["max"])
+        new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], EE_BOUNDS["min"], EE_BOUNDS["max"])
         
         # Limit the step size based on the last robot pose
         new_robot_pose[:3, 3] = limit_step(self.last_robot_pose[:3, 3], new_robot_pose[:3, 3])
@@ -180,8 +180,7 @@ def main():
     
 
     # ── 안전 장치 상태 ─────────────────────────────────────────
-    ee_bounds = {"min": [0.0, -0.3, 0.0], "max": [0.3, 0.3, 0.3]}  # end-effector bounds
-    safety_filter = SafetyFilter(ee_bounds, phone_to_target.current_robot_pose)
+    safety_filter = SafetyFilter(phone_to_target.current_robot_pose)
 
     # ── Main loop ────────────────────────────────────────────
     if args.log == "terminal":
@@ -198,12 +197,12 @@ def main():
         # ── 안전 장치: 공간 제한 → 최대 이동량 ──
         new_robot_pose = safety_filter.apply(new_robot_pose)
 
-        # ── ⑤ IK ──
+        # ── IK ──
         iksolver.solve(new_robot_pose)
 
         actual_pose = robot.get_T_world_frame(EE_FRAME)
 
-        # ── ⑥ 로그 · 시각화 ──
+        # ── 로그 · 시각화 ──
         print_log(logger, args, action, phone_to_target.phone_delta ,phone_to_target.current_robot_pose, new_robot_pose, actual_pose)
         show(viz, robot)
 
