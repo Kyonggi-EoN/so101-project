@@ -91,6 +91,7 @@ def make_action_source(source: str):
     
             def read_action():
                 return phone_to_robot.action(teleop_device.get_action())
+            return read_action
         
         else:
             from test_src.keyboard_ik_viz import KeyboardSource
@@ -137,6 +138,22 @@ class PhoneToTargetPose:
         self.isEnabled = action["enabled"]
         return self.new_robot_pose
 
+class SafetyFilter:
+    def __init__(self, ee_bounds: dict, start_pose: np.ndarray):
+        self.ee_bounds = ee_bounds
+        self.last_robot_pose = start_pose.copy()  # 첫 프레임도 최대 이동량 비교 (시작 자세가 범위 밖이어도 5cm 씩)
+
+    def apply(self, new_robot_pose: np.ndarray) -> np.ndarray:
+        # Clip the end-effector position to the defined bounds
+        new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], self.ee_bounds["min"], self.ee_bounds["max"])
+        
+        # Limit the step size based on the last robot pose
+        new_robot_pose[:3, 3] = limit_step(self.last_robot_pose[:3, 3], new_robot_pose[:3, 3])
+        
+        # Update the last robot pose for the next iteration
+        self.last_robot_pose = new_robot_pose.copy()
+        
+        return new_robot_pose
 
 def main():
     args = parse_args()
@@ -164,7 +181,7 @@ def main():
 
     # ── 안전 장치 상태 ─────────────────────────────────────────
     ee_bounds = {"min": [0.0, -0.3, 0.0], "max": [0.3, 0.3, 0.3]}  # end-effector bounds
-    last_robot_pose = phone_to_target.current_robot_pose.copy()
+    safety_filter = SafetyFilter(ee_bounds, phone_to_target.current_robot_pose)
 
     # ── Main loop ────────────────────────────────────────────
     if args.log == "terminal":
@@ -179,9 +196,7 @@ def main():
         new_robot_pose = phone_to_target.update(robot,action)
 
         # ── 안전 장치: 공간 제한 → 최대 이동량 ──
-        new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], ee_bounds["min"], ee_bounds["max"])
-        new_robot_pose[:3, 3] = limit_step(last_robot_pose[:3, 3], new_robot_pose[:3, 3])
-        last_robot_pose = new_robot_pose.copy()  # 다음 프레임의 최대 이동량 비교용
+        new_robot_pose = safety_filter.apply(new_robot_pose)
 
         # ── ⑤ IK ──
         iksolver.solve(new_robot_pose)
