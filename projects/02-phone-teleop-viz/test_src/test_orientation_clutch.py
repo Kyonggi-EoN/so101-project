@@ -10,7 +10,7 @@ from pathlib import Path
 import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from phone_teleop_viz import OrientationClutch, phone_to_robot_action  # noqa: E402
+from phone_teleop_viz import PHONE_POSITION_SCALE as S, OrientationClutch, phone_to_robot_action  # noqa: E402
 from lerobot.teleoperators.phone.config_phone import PhoneOS  # noqa: E402
 from lerobot.teleoperators.phone.phone_processor import MapPhoneActionToRobotAction  # noqa: E402
 from lerobot.utils.rotation import Rotation  # noqa: E402
@@ -39,10 +39,10 @@ forward = yaw90.apply(np.array([0.1, 0, 0]))
 c = OrientationClutch()
 run(c, phone(True, [0, 0, 0], yaw90))                 # 누르는 순간
 a = run(c, phone(True, forward, yaw90))               # 앞으로 밂
-assert np.allclose([a["target_x"], a["target_y"], a["target_z"]], [0.1, 0, 0], atol=1e-9), a
+assert np.allclose([a["target_x"], a["target_y"], a["target_z"]], [0.1 * S, 0, 0], atol=1e-9), a
 # 비교: 클러치 없으면 왼쪽(+y) 으로 감
 b = phone_to_robot_action(MAPPER, phone(True, forward, yaw90))
-assert np.allclose([b["target_x"], b["target_y"]], [0, 0.1], atol=1e-9), b
+assert np.allclose([b["target_x"], b["target_y"]], [0, 0.1 * S], atol=1e-9), b
 
 # 2. 30° 기울여 들고 누르기만 함 → 회전 목표 0 (그리퍼 안 튐)
 c = OrientationClutch()
@@ -62,7 +62,7 @@ c = OrientationClutch()
 run(c, phone(True, [0, 0, 0], Rotation.from_rotvec([0, 0, 0])))
 for phone_pos, robot_xyz in [([0.1, 0, 0], [0.1, 0, 0]), ([0, 0.1, 0], [0, 0.1, 0]), ([0, 0, 0.1], [0, 0, 0.1])]:
     a = run(c, phone(True, phone_pos, Rotation.from_rotvec([0, 0, 0])))
-    assert np.allclose([a["target_x"], a["target_y"], a["target_z"]], robot_xyz, atol=1e-9), (phone_pos, a)
+    assert np.allclose([a["target_x"], a["target_y"], a["target_z"]], np.array(robot_xyz) * S, atol=1e-9), (phone_pos, a)
 # 손 떼면 0
 a = run(c, phone(False, [0.1, 0, 0], Rotation.from_rotvec([0, 0, 0.3])))
 assert a["target_x"] == 0 and a["target_wz"] == 0, a

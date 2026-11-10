@@ -27,6 +27,7 @@ import placo
 
 FPS = 30.0
 MAX_EE_STEP = 0.05  # end-effector 한 스텝당 최대 이동량 (m)
+PHONE_POSITION_SCALE = 0.4  # 핸드폰 이동량 × 0.4 = 로봇 이동량. 1:1 이면 손(0.5~1.8m)이 로봇 도달(0.37m)보다 훨씬 커서 범위 끝에 붙음 (lerobot 예제 0.5)
 MAX_JOINT_VELOCITY = 2.0  # 관절 최대 속도 (rad/s, 약 170°/s). 1.0 은 조작감이 너무 느림, URDF 기본 10 은 너무 빠름
 EE_BOUNDS = {"min": [0.0, -1.0, 0.05], "max": [1.0, 1.0, 1.0]}  # 작업 공간 (m). 바닥 z ≥ 5cm(책상 여유), 뒤 x ≥ 0 만 막고 나머지는 팔 도달 구가 정함
 # 팔이 닿는 거리 제한 (구): 어깨 회전 중심에서 REACH_RADIUS 보다 먼 목표는 당겨온다
@@ -53,6 +54,8 @@ def parse_args():
                         help="입력 소스. keyboard 는 핸드폰 없이 테스트할 때")
     parser.add_argument("--log", choices=["terminal", "rerun"], default="terminal",
                         help="로그 출력 위치. keyboard 는 rerun 권장 (터미널 출력이 키보드 입력과 충돌)")
+    parser.add_argument("--record", action="store_true",
+                        help="매 프레임 값을 outputs/teleop_log.csv 로 저장 (조작감 분석용)")
     return parser.parse_args()
 
 def print_log(logger, args, action, phone_delta, current_robot_pose, new_robot_pose, actual_pose):
@@ -113,7 +116,8 @@ def phone_to_robot_action(phone_to_robot: MapPhoneActionToRobotAction, phone_act
     pos, rotvec = phone_action["phone.pos"], phone_action["phone.rot"].as_rotvec()  # lerobot 이 phone.* 를 pop 하므로 먼저 꺼냄
     action = phone_to_robot.action(phone_action)
     if action["enabled"]:  # 손 떼면 lerobot 이 0 으로 둔 값 그대로
-        action.update(target_x=pos[0], target_y=pos[1], target_z=pos[2],
+        action.update(target_x=pos[0] * PHONE_POSITION_SCALE, target_y=pos[1] * PHONE_POSITION_SCALE,
+                      target_z=pos[2] * PHONE_POSITION_SCALE,
                       target_wx=rotvec[0], target_wy=rotvec[1], target_wz=rotvec[2])
     return action
 
@@ -220,6 +224,10 @@ def main():
     if args.log == "rerun":
         from test_src.debug_log import DebugLogger
         logger = DebugLogger(web_port=9091)
+    recorder = None
+    if args.record:
+        from test_src.csv_log import CsvRecorder
+        recorder = CsvRecorder(robot)
 
     # ── ①② 입력 소스 설정 ─────────────────────────────────────
     read_action = make_action_source(args.source)
@@ -255,6 +263,8 @@ def main():
 
         # ── 로그 · 시각화 ──
         print_log(logger, args, action, phone_to_target.phone_delta ,phone_to_target.current_robot_pose, new_robot_pose, actual_pose)
+        if recorder:
+            recorder.log(action, phone_to_target.current_robot_pose, new_robot_pose, actual_pose)
         show(viz, robot)
 
         precise_sleep(max (1.0 / FPS - (time.perf_counter() - t0), 0.0))
