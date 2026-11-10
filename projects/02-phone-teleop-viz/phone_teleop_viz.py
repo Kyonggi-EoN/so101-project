@@ -85,6 +85,26 @@ def show(viz, robot):
     viz.display(robot.state.q)
     placo_utils.visualization.robot_frame_viz(robot, EE_FRAME)
 
+class OrientationClutch:
+    """방향 클러치: 누르는 순간 핸드폰 방향을 새 기준(앞 = 그 순간 핸드폰이 향한 쪽, 회전 = 0)으로 잡는다.
+    lerobot Phone 은 누를 때 위치 원점만 다시 잡고, 방향은 처음 캘리브레이션 그대로 쓴다 (teleop_phone.py 355·358·359줄).
+    마우스 비유: 마우스를 들었다 놓은 방향이 새 "위쪽" 이 된다."""
+    def __init__(self):
+        self.was_enabled = False
+        self.press_rot_inv = None  # 누른 순간 핸드폰 방향의 역회전 (R_press⁻¹)
+
+    def apply(self, phone_action: dict) -> dict:
+        if phone_action["phone.enabled"] and not self.was_enabled:
+            self.press_rot_inv = phone_action["phone.rot"].inv()  # 누르는 순간 방향 저장
+        self.was_enabled = phone_action["phone.enabled"]
+
+        if self.press_rot_inv is not None:
+            # 위치: 캘리브레이션 축 → 누른 순간 핸드폰 축
+            phone_action["phone.pos"] = self.press_rot_inv.apply(phone_action["phone.pos"])
+            # 회전: 캘리브레이션부터의 회전 → 누른 순간부터의 회전 (누른 순간 = 0)
+            phone_action["phone.rot"] = self.press_rot_inv * phone_action["phone.rot"]
+        return phone_action
+
 def make_action_source(source: str):
     # 둘 다 같은 모양의 action dict (enabled, target_x..wz, gripper_vel) 를 돌려준다
         if source == "phone":
@@ -98,8 +118,10 @@ def make_action_source(source: str):
             # Connecting the phone (캘리브레이션 터치까지 여기서 기다린다)
             teleop_device.connect()
     
+            orientation_clutch = OrientationClutch()
+
             def read_action():
-                return phone_to_robot.action(teleop_device.get_action())
+                return phone_to_robot.action(orientation_clutch.apply(teleop_device.get_action()))
             return read_action
         
         else:

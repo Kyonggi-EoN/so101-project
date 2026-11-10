@@ -108,6 +108,28 @@ sudo ufw status          # 4443/tcp ALLOW 가 보이면 됨
   - 예: `https://192.168.0.8:4443`
 - 서버 자체는 떠 있는지 확인: `ss -ltnp | grep 4443` → `0.0.0.0:4443` 이 보이면 정상
 
+### 5-5. 서버와 다른 곳에서 원격으로 작업할 때 (Tailscale)
+
+증상: 핸드폰에서 `https://<PC IP>:4443` 접속 시 `This site can't be reached`. 서버에서는 `ss -ltnp | grep 4443` 로 `0.0.0.0:4443` 이 떠 있고, 서버 안에서 접속하면 정상
+
+원인: 서버는 집(연구실) 공유기에, 핸드폰은 지금 있는 곳의 Wi-Fi 에 있음. `192.168.0.x` 는 서버 쪽 공유기 안에서만 보이는 내부 주소라 핸드폰이 찾아갈 수 없다
+
+- 확인: 서버에서 `tailscale status` → 내 PC 가 `direct <공인 IP>` 로 붙어 있으면 서버와 다른 네트워크다
+
+해결: 핸드폰에도 Tailscale 을 켜고 서버의 **Tailscale 주소**로 접속
+
+```bash
+tailscale ip -4          # 서버에서 실행 → 100.x.x.x
+```
+
+```
+https://<서버 Tailscale IP>:4443
+예: https://100.87.74.52:4443
+```
+
+- 핸드폰 Tailscale 앱이 꺼져 있으면 `tailscale status` 에 그 핸드폰이 `offline` 으로 나온다
+- ufw 규칙(5-4)은 이 경우에도 필요하다
+
 ## 6. rerun 포트 충돌
 
 증상: `--log rerun` 으로 실행하면
