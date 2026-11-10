@@ -48,22 +48,70 @@
 
 **준비물**
 
--
+- 리눅스 PC (우분투에서 확인함). 로봇팔은 **필요 없다** (시뮬레이션만)
+- 핸드폰 모드: ARCore 를 지원하는 Android 핸드폰 + PC 와 **같은 Wi-Fi**
+- 키보드 모드: 핸드폰 없이 키보드로 테스트
 
-**실행**
+**설치** (리포 루트에서, 처음 한 번)
 
-```powershell
-cd C:\...\so101-project
-uv sync
-
-# 여기에 명령어
+```bash
+uv sync --extra placo-dep --extra phone
 ```
+
+- `placo-dep` = IK(관절 각도 계산)·3D 화면, `phone` = 핸드폰 연결
+- 그냥 `uv sync` 만 하면 위 두 개가 **다시 지워진다**. 항상 같이 붙인다
+
+**실행 1 — 키보드 모드** (핸드폰 없이)
+
+```bash
+GLIBC_TUNABLES=glibc.rtld.execstack=2 uv run python projects/02-phone-teleop-viz/phone_teleop_viz.py --source keyboard --log rerun
+```
+
+- 앞의 `GLIBC_TUNABLES=...` 는 꼭 붙인다. 없으면 `RuntimeError: HEBI Core library not found` (5번 참고)
+- 실행하고 4~5초 기다린 뒤 터미널의 `>` 에 명령을 입력한다
+
+| 명령 | 뜻 |
+|---|---|
+| `on` | 클러치 누르기 (이때부터 움직임이 반영된다) |
+| `off` | 클러치 떼기 (로봇이 그 자리에 멈춘다) |
+| `x0.1` | 앞으로 10cm (`x-0.1` 은 뒤로) |
+| `y0.1` | 왼쪽으로 10cm (`y-0.1` 은 오른쪽) |
+| `z0.05` | 위로 5cm (`z-0.05` 는 아래) |
+
+예: `on` → `x-0.1` → `off`. 거리는 **누른 순간의 위치**부터 잰다. 이어서 움직이려면 `off` → `on` 후 다시 입력한다.
+
+**실행 2 — 핸드폰 모드**
+
+```bash
+GLIBC_TUNABLES=glibc.rtld.execstack=2 uv run python projects/02-phone-teleop-viz/phone_teleop_viz.py
+```
+
+1. 핸드폰 브라우저(Chrome)에서 `https://<PC IP>:4443` 접속
+   - PC IP 확인: `ip -4 -br addr` → `192.168.0.x` 형태의 주소
+   - 예: `https://192.168.0.8:4443`
+   - 인증서 경고가 뜨는 것은 정상 → "고급 → 계속 진행"
+   - 접속이 안 되면 방화벽: `sudo ufw allow 4443/tcp`
+2. 핸드폰 위쪽 끝을 로봇 앞쪽으로, 화면을 위로 들고 **화면을 터치한 채 손가락을 살짝 움직인다** (캘리브레이션 = 지금 방향을 기준으로 잡기). 터미널에 `Touch and move on the WebXR page ...` 가 떠 있는 동안 기다리고 있는 것이다
+3. 화면을 **터치하고 있는 동안만** 로봇이 핸드폰을 따라 움직인다 (클러치). 손을 떼면 멈춘다
+
+**화면 주소**
+
+| 화면 | 주소 |
+|---|---|
+| 3D 로봇 (meshcat) | `http://127.0.0.1:7000/static/` |
+| 그래프 (rerun, `--log rerun` 일 때) | `http://localhost:9091/?url=rerun+http://127.0.0.1:9876/proxy` |
+
+원격 접속(VS Code Remote-SSH)이면 포트 7000, 9091, 9876 을 포워딩한다.
 
 **이렇게 나오면 성공**
 
 ```
-(화면에 나오는 결과)
+Viewer URL: http://127.0.0.1:7000/static/
+rerun viewer: http://localhost:9091/?url=rerun+http://127.0.0.1:9876/proxy
+>
 ```
+
+브라우저에서 meshcat 주소를 열면 로봇팔이 보인다. 시작 위치가 작업 공간 밖이라 처음에 한 번 `EE jump ... rate-limited` 가 찍히며 조금 움직이는 것은 정상이다.
 
 
 ## 4. 어떻게 동작하는가
