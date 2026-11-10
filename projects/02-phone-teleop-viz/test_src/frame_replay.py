@@ -74,10 +74,10 @@ def run_one(target_script: str, out_path: str) -> None:
     real_print = builtins.print
 
     def fake_print(*args, **kwargs):
-        line = " ".join(str(a) for a in args)
-        if line.startswith("new robot pose"):
-            out.write(line.split(": ", 1)[1] + "\n")
-            written[0] += 1
+        for line in " ".join(str(a) for a in args).split("\n"):  # 로그를 한 번에 출력해도 줄 단위로
+            if line.startswith("new robot pose"):
+                out.write(line.split(": ", 1)[1].split("\033")[0] + "\n")  # 줄 끝 \033[K 제거
+                written[0] += 1
 
     builtins.print = fake_print
     sys.argv = [target_script, "--source", "keyboard", "--log", "terminal"]

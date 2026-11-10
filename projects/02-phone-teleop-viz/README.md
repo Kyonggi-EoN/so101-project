@@ -64,9 +64,11 @@ uv sync --extra placo-dep --extra phone
 **실행 1 — 키보드 모드** (핸드폰 없이)
 
 ```bash
-GLIBC_TUNABLES=glibc.rtld.execstack=2 uv run python projects/02-phone-teleop-viz/phone_teleop_viz.py --source keyboard --log rerun
+GLIBC_TUNABLES=glibc.rtld.execstack=2 uv run python projects/02-phone-teleop-viz/phone_teleop_viz.py --source keyboard
 ```
 
+- 터미널 위쪽에 로그(목표·실제 위치)가 계속 갱신되고, 그 아래에서 명령을 입력한다
+- 그래프로 보고 싶으면 끝에 `--log rerun` 을 붙인다 (로그가 터미널 대신 브라우저로 간다)
 - 앞의 `GLIBC_TUNABLES=...` 는 꼭 붙인다. 없으면 `RuntimeError: HEBI Core library not found` (5번 참고)
 - 실행하고 4~5초 기다린 뒤 터미널의 `>` 에 명령을 입력한다
 
@@ -103,15 +105,21 @@ GLIBC_TUNABLES=glibc.rtld.execstack=2 uv run python projects/02-phone-teleop-viz
 
 원격 접속(VS Code Remote-SSH)이면 포트 7000, 9091, 9876 을 포워딩한다.
 
-**이렇게 나오면 성공**
+**이렇게 나오면 성공** (키보드 모드에서 `on` → `x-0.1` 입력 후)
 
 ```
-Viewer URL: http://127.0.0.1:7000/static/
-rerun viewer: http://localhost:9091/?url=rerun+http://127.0.0.1:9876/proxy
->
+enabled            : True
+gripper_vel        : +0.0
+phone delta        : pos [-0.100 +0.000 +0.000]  rot [+0.000 +0.000 +0.000]
+current robot pose : pos [+0.300 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
+new robot pose     : pos [+0.200 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
+actual robot pose  : pos [+0.200 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
+
+on
+> x-0.1
 ```
 
-브라우저에서 meshcat 주소를 열면 로봇팔이 보인다. 시작 위치가 작업 공간 밖이라 처음에 한 번 `EE jump ... rate-limited` 가 찍히며 조금 움직이는 것은 정상이다.
+`new robot pose`(목표)와 `actual robot pose`(실제)가 같아지면 IK 가 목표에 도달한 것이다. 브라우저에서 meshcat 주소를 열면 로봇팔이 움직이는 것이 보인다. 시작 위치(x=0.391)가 작업 공간(x≤0.3) 밖이라 입력 없이도 처음에 조금 움직이는 것은 정상이다.
 
 
 ## 4. 어떻게 동작하는가

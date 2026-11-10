@@ -9,6 +9,7 @@
     # 키보드 명령: on / off / x0.1 / y0.1 / z0.05
 """
 import argparse
+import atexit
 import time
 
 # phone library imports
@@ -53,21 +54,23 @@ def print_log(logger, args, action, phone_delta, current_robot_pose, new_robot_p
     if args.log == "rerun":
         logger.log(action, phone_delta, current_robot_pose, new_robot_pose, actual_pose)
     else:
-        # print log (제자리 갱신: 커서를 맨 위로 → 출력 → 남은 아래쪽 지우기)
-        print("\033[H\n", end="")
-        print(f"enabled            : {action['enabled']!s:<5}   \ngripper_vel: {action['gripper_vel']:+.1f}")
-        print(f"phone delta        : {format_pose(phone_delta)}")
-        print(f"current robot pose : {format_pose(current_robot_pose)}")
-        print(f"new robot pose     : {format_pose(new_robot_pose)}")
-        print(f"actual robot pose  : {format_pose(actual_pose)}")
-        print("\033[J", end="", flush=True)
+        lines = [
+            f"enabled            : {action['enabled']}",
+            f"gripper_vel        : {action['gripper_vel']:+.1f}",
+            f"phone delta        : {format_pose(phone_delta)}",
+            f"current robot pose : {format_pose(current_robot_pose)}",
+            f"new robot pose     : {format_pose(new_robot_pose)}",
+            f"actual robot pose  : {format_pose(actual_pose)}",
+        ]
+        # 제자리 갱신: 커서 위치 저장(\0337) → 2줄로 이동 → 줄마다 끝까지 지우며(\033[K) 출력 → 커서 복귀(\0338)
+        # 9줄 아래 키보드 입력 줄은 안 건드린다. 한 번에 출력해야 입력 스레드 출력이 중간에 안 끼어든다
+        print("\0337\033[2;1H" + "\033[K\n".join(lines) + "\033[K\0338", end="", flush=True)
 
 def limit_step(last_pos: np.ndarray, new_pos: np.ndarray, max_ee_step: float=MAX_EE_STEP) -> np.ndarray:
     """위치(3개)를 받아서, 직전 위치에서 max_ee_step 보다 멀면 방향은 그대로 두고 길이만 줄인다."""
     dpos = last_pos - new_pos
     n = float(np.linalg.norm(dpos))
     if n > max_ee_step:
-        print(f"EE jump {n:.3f}m > {max_ee_step}m; rate-limited")
         dpos = dpos / n * max_ee_step
         return last_pos - dpos
     else:
@@ -184,7 +187,9 @@ def main():
 
     # ── Main loop ────────────────────────────────────────────
     if args.log == "terminal":
-        print("\033[2J", end="")  # 화면 전체 지우기 (연결 메시지 정리)
+        # 화면 지우기 → 9줄부터 아래만 스크롤 영역 (키보드 입력·경고용) → 커서를 9줄로
+        print("\033[2J\033[9r\033[9;1H", end="")
+        atexit.register(print, "\033[r")  # 끝날 때 스크롤 영역 원래대로
     while True:
         t0 = time.perf_counter()
 
