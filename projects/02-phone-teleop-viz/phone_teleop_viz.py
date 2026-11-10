@@ -27,8 +27,8 @@ import placo
 
 FPS = 30.0
 MAX_EE_STEP = 0.05  # end-effector 한 스텝당 최대 이동량 (m)
-MAX_JOINT_VELOCITY = 1.0  # 관절 최대 속도 (rad/s, 약 57°/s). URDF 기본 10 rad/s 는 너무 빠름
-EE_BOUNDS = {"min": [0.0, -0.3, 0.05], "max": [0.3, 0.3, 0.3]}  # end-effector 작업 공간 제한 (m). z 최소 5cm = 책상 위 여유
+MAX_JOINT_VELOCITY = 2.0  # 관절 최대 속도 (rad/s, 약 170°/s). 1.0 은 조작감이 너무 느림, URDF 기본 10 은 너무 빠름
+EE_BOUNDS = {"min": [0.0, -1.0, 0.05], "max": [1.0, 1.0, 1.0]}  # 작업 공간 (m). 바닥 z ≥ 5cm(책상 여유), 뒤 x ≥ 0 만 막고 나머지는 팔 도달 구가 정함
 # 팔이 닿는 거리 제한 (구): 어깨 회전 중심에서 REACH_RADIUS 보다 먼 목표는 당겨온다
 # ponytail: 어깨 관절이 pan 에 따라 3.5cm 원을 그리며 움직이는데 중심 하나로 근사. 여유 10% 로 덮음
 SHOULDER_CENTER = np.array([0.039, 0.0, 0.117])  # pan 축 위, shoulder_lift 높이 (URDF 에서 측정)

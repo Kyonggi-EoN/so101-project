@@ -111,15 +111,15 @@ GLIBC_TUNABLES=glibc.rtld.execstack=2 uv run python projects/02-phone-teleop-viz
 enabled            : True
 gripper_vel        : +0.0
 phone delta        : pos [-0.100 +0.000 +0.000]  rot [+0.000 +0.000 +0.000]
-current robot pose : pos [+0.300 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
-new robot pose     : pos [+0.200 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
-actual robot pose  : pos [+0.200 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
+current robot pose : pos [+0.391 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
+new robot pose     : pos [+0.291 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
+actual robot pose  : pos [+0.291 -0.000 +0.226]  rot [+0.038 +1.570 +0.038]
 
 on
 > x-0.1
 ```
 
-`new robot pose`(목표)와 `actual robot pose`(실제)가 같아지면 IK 가 목표에 도달한 것이다. 브라우저에서 meshcat 주소를 열면 로봇팔이 움직이는 것이 보인다. 시작 위치(x=0.391)가 작업 공간(x≤0.3) 밖이라 입력 없이도 처음에 조금 움직이는 것은 정상이다.
+`new robot pose`(목표)와 `actual robot pose`(실제)가 같아지면 IK 가 목표에 도달한 것이다. 브라우저에서 meshcat 주소를 열면 로봇팔이 움직이는 것이 보인다.
 
 
 ## 4. 어떻게 동작하는가
