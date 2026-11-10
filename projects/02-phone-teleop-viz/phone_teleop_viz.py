@@ -28,7 +28,11 @@ import placo
 FPS = 30.0
 MAX_EE_STEP = 0.05  # end-effector 한 스텝당 최대 이동량 (m)
 MAX_JOINT_VELOCITY = 1.0  # 관절 최대 속도 (rad/s, 약 57°/s). URDF 기본 10 rad/s 는 너무 빠름
-EE_BOUNDS = {"min": [0.0, -0.3, 0.0], "max": [0.3, 0.3, 0.3]}  # end-effector 작업 공간 제한 (m)
+EE_BOUNDS = {"min": [0.0, -0.3, 0.05], "max": [0.3, 0.3, 0.3]}  # end-effector 작업 공간 제한 (m). z 최소 5cm = 책상 위 여유
+# 팔이 닿는 거리 제한 (구): 어깨 회전 중심에서 REACH_RADIUS 보다 먼 목표는 당겨온다
+# ponytail: 어깨 관절이 pan 에 따라 3.5cm 원을 그리며 움직이는데 중심 하나로 근사. 여유 10% 로 덮음
+SHOULDER_CENTER = np.array([0.039, 0.0, 0.117])  # pan 축 위, shoulder_lift 높이 (URDF 에서 측정)
+REACH_RADIUS = 0.37  # 최대 도달 거리 0.41m (무작위 관절값 2만 개로 측정) 의 90%
 REGULARIZATION_WEIGHT = 0.000001  # task 정규화 가중치
 URDF_PATH = "projects/02-phone-teleop-viz/so101-description/so101_new_calib.urdf"
 EE_FRAME = "gripper_frame_link"
@@ -151,7 +155,13 @@ class SafetyFilter:
     def apply(self, new_robot_pose: np.ndarray) -> np.ndarray:
         # Clip the end-effector position to the defined bounds
         new_robot_pose[:3, 3] = np.clip(new_robot_pose[:3, 3], EE_BOUNDS["min"], EE_BOUNDS["max"])
-        
+
+        # 팔이 닿는 거리 안으로: 어깨 중심에서 너무 멀면 같은 방향으로 REACH_RADIUS 까지만
+        d = new_robot_pose[:3, 3] - SHOULDER_CENTER # 어깨 중심에서 EE가 떨어진 길이 배열
+        n = np.linalg.norm(d) # EE와 어깨 중심 사이의 거리 √(x² + y² + z²)
+        if n > REACH_RADIUS:
+            new_robot_pose[:3, 3] = SHOULDER_CENTER + d / n * REACH_RADIUS # 어깨 중심 위치 + 단위 백터 * 최대 반지름 = 최대 도달 위치
+
         # Limit the step size based on the last robot pose
         new_robot_pose[:3, 3] = limit_step(self.last_robot_pose[:3, 3], new_robot_pose[:3, 3])
         
