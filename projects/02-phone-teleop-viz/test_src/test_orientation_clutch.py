@@ -67,4 +67,14 @@ for phone_pos, robot_xyz in [([0.1, 0, 0], [0.1, 0, 0]), ([0, 0.1, 0], [0, 0.1, 
 a = run(c, phone(False, [0.1, 0, 0], Rotation.from_rotvec([0, 0, 0.3])))
 assert a["target_x"] == 0 and a["target_wz"] == 0, a
 
-print("OK: 방향 클러치 + 축 매핑 4개 확인 통과")
+# 5. 60° 숙인 채(+ 왼쪽 90° 돌려) 누르고 손을 앞으로 → 로봇도 앞으로만 (위로 새면 안 됨)
+pitched = yaw90 * Rotation.from_rotvec([0, np.deg2rad(60), 0])
+c = OrientationClutch()
+run(c, phone(True, [0, 0, 0], pitched))
+a = run(c, phone(True, yaw90.apply([0.1, 0, 0]), pitched))   # 손은 수평으로 "핸드폰이 향한 쪽" 10cm
+assert np.allclose([a["target_x"], a["target_y"], a["target_z"]], [0.1 * S, 0, 0], atol=1e-9), a
+# 거기서 10° 더 숙이면 회전은 숙임 10° 만
+a = run(c, phone(True, [0, 0, 0], yaw90 * Rotation.from_rotvec([0, np.deg2rad(70), 0])))
+assert np.allclose([a["target_wx"], a["target_wy"], a["target_wz"]], [0, np.deg2rad(10) * SR, 0], atol=1e-9), a
+
+print("OK: 방향 클러치 + 축 매핑 5개 확인 통과")

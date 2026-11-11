@@ -27,7 +27,7 @@ import placo
 
 FPS = 30.0
 MAX_EE_STEP = 0.05  # end-effector 한 스텝당 최대 이동량 (m)
-PHONE_ROTATION_SCALE = 0.2  # 핸드폰 회전 × 0.2 = 그리퍼 회전. 1:1 이면 손목이 관절 한계에 붙음 (녹화 재생: 붙은 시간 46% → 2%)
+PHONE_ROTATION_SCALE = 1.0  # 핸드폰 회전 × 1.0 = 로봇 회전 (arm_rotation 으로 로봇이 할 수 있는 회전만 주문). 예전 0.2 는 축이 어긋났던 때 값
 PHONE_POSITION_SCALE = 0.4  # 핸드폰 이동량 × 0.4 = 로봇 이동량. 1:1 이면 손(0.5~1.8m)이 로봇 도달(0.37m)보다 훨씬 커서 범위 끝에 붙음 (lerobot 예제 0.5)
 MAX_JOINT_VELOCITY = 2.0  # 관절 최대 속도 (rad/s, 약 170°/s). 1.0 은 조작감이 너무 느림, URDF 기본 10 은 너무 빠름
 EE_BOUNDS = {"min": [0.0, -1.0, 0.05], "max": [1.0, 1.0, 1.0]}  # 작업 공간 (m). 바닥 z ≥ 5cm(책상 여유), 뒤 x ≥ 0 만 막고 나머지는 팔 도달 구가 정함
@@ -35,6 +35,10 @@ EE_BOUNDS = {"min": [0.0, -1.0, 0.05], "max": [1.0, 1.0, 1.0]}  # 작업 공간 
 # ponytail: 어깨 관절이 pan 에 따라 3.5cm 원을 그리며 움직이는데 중심 하나로 근사. 여유 10% 로 덮음
 SHOULDER_CENTER = np.array([0.039, 0.0, 0.117])  # pan 축 위, shoulder_lift 높이 (URDF 에서 측정)
 REACH_RADIUS = 0.37  # 최대 도달 거리 0.41m (무작위 관절값 2만 개로 측정) 의 90%
+TILT_RANGE = np.deg2rad([-30.0, 90.0])   # 그리퍼 숙임 범위 (수평 0, 아래 +). 90 = 바닥을 수직으로 봄 (위에서 집기)
+TWIST_RANGE = np.deg2rad([-90.0, 90.0])  # 그리퍼 비틀림 범위
+R_HOME = np.array([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]])  # 숙임·비틀림 0 인 그리퍼 방향: 뻗은 방향(z) 앞, y 왼쪽, x 아래 (관절 0 자세)
+PAN_AXIS = np.array([0.039, 0.0, 0.0])  # 베이스 회전(shoulder_pan) 축이 지나는 점. 축은 월드 z (URDF 에서 측정)
 REGULARIZATION_WEIGHT = 0.000001  # task 정규화 가중치
 URDF_PATH = "projects/02-phone-teleop-viz/so101-description/so101_new_calib.urdf"
 EE_FRAME = "gripper_frame_link"
@@ -90,23 +94,27 @@ def show(viz, robot):
     placo_utils.visualization.robot_frame_viz(robot, EE_FRAME)
 
 class OrientationClutch:
-    """방향 클러치: 누르는 순간 핸드폰 방향을 새 기준(앞 = 그 순간 핸드폰이 향한 쪽, 회전 = 0)으로 잡는다.
+    """방향 클러치: 누르는 순간을 새 기준으로 잡는다 (앞 = 그 순간 핸드폰이 향한 쪽, 회전 = 0).
     lerobot Phone 은 누를 때 위치 원점만 다시 잡고, 방향은 처음 캘리브레이션 그대로 쓴다 (teleop_phone.py 355·358·359줄).
-    마우스 비유: 마우스를 들었다 놓은 방향이 새 "위쪽" 이 된다."""
+    마우스 비유: 마우스를 들었다 놓은 방향이 새 "위쪽" 이 된다.
+    옆으로 돌린 각도(yaw)만 기준으로 잡는다: 숙이거나 기울인 채 눌러도 손을 앞으로 밀면 로봇도 앞
+    (방향 전체를 잡으면 60° 숙인 채 눌렀을 때 앞으로 10cm → 앞 5cm + 위 8.7cm 가 됨)"""
     def __init__(self):
         self.was_enabled = False
-        self.press_rot_inv = None  # 누른 순간 핸드폰 방향의 역회전 (R_press⁻¹)
+        self.press_angles = None  # 누른 순간 핸드폰 (yaw, pitch, roll)
 
     def apply(self, phone_action: dict) -> dict:
+        angles = np.array(phone_angles(phone_action["phone.rot"].as_rotvec()))
         if phone_action["phone.enabled"] and not self.was_enabled:
-            self.press_rot_inv = phone_action["phone.rot"].inv()  # 누르는 순간 방향 저장
+            self.press_angles = angles  # 누르는 순간 방향 저장
         self.was_enabled = phone_action["phone.enabled"]
 
-        if self.press_rot_inv is not None:
-            # 위치: 캘리브레이션 축 → 누른 순간 핸드폰 축
-            phone_action["phone.pos"] = self.press_rot_inv.apply(phone_action["phone.pos"])
-            # 회전: 캘리브레이션부터의 회전 → 누른 순간부터의 회전 (누른 순간 = 0)
-            phone_action["phone.rot"] = self.press_rot_inv * phone_action["phone.rot"]
+        if self.press_angles is not None:
+            # 위치: 누른 순간 핸드폰이 향한 쪽(yaw)이 앞
+            phone_action["phone.pos"] = rot([0, 0, 1], -self.press_angles[0]) @ phone_action["phone.pos"]
+            # 회전: 누른 순간부터 yaw·숙임·기울임 각각의 변화량 (-180~180°)
+            d = (angles - self.press_angles + np.pi) % (2 * np.pi) - np.pi
+            phone_action["phone.rot"] = Rotation.from_matrix(rot([0, 0, 1], d[0]) @ rot([0, 1, 0], d[1]) @ rot([1, 0, 0], d[2]))
         return phone_action
 
 def phone_to_robot_action(phone_to_robot: MapPhoneActionToRobotAction, phone_action: dict) -> dict:
@@ -177,12 +185,38 @@ def clip_workspace(pos: np.ndarray) -> np.ndarray:
         pos = SHOULDER_CENTER + d / n * REACH_RADIUS # 어깨 중심 위치 + 단위 백터 * 최대 반지름 = 최대 도달 위치
     return pos
 
+def rot(axis, angle: float) -> np.ndarray:
+    return Rotation.from_rotvec(np.array(axis, float) * angle).as_matrix()
+
+def phone_angles(rotvec: np.ndarray):
+    """핸드폰 회전 → (옆으로 돌리기 yaw, 앞으로 숙이기 pitch, 양옆 기울이기 roll). R = Rz(yaw)·Ry(pitch)·Rx(roll)"""
+    R = Rotation.from_rotvec(rotvec).as_matrix()
+    return np.arctan2(R[1, 0], R[0, 0]), np.arcsin(-np.clip(R[2, 0], -1.0, 1.0)), np.arctan2(R[2, 1], R[2, 2])
+
+def gripper_angles(R: np.ndarray):
+    """그리퍼 방향 → (heading, tilt, twist). R = Rz(heading)·Ry(tilt)·R_HOME·Rz(twist)
+    heading: 위에서 본 방향, tilt: 숙임 (아래 +), twist: 자기 축(뻗은 방향) 비틀림"""
+    z = R[:, 2]  # 그리퍼 뻗은 방향
+    heading, tilt = np.arctan2(z[1], z[0]), np.arcsin(-np.clip(z[2], -1.0, 1.0))
+    M = R_HOME.T @ rot([0, 1, 0], -tilt) @ rot([0, 0, 1], -heading) @ R  # = Rz(twist)
+    return heading, tilt, np.arctan2(M[1, 0], M[0, 0])
+
+def gripper_rotation(heading: float, tilt: float, twist: float) -> np.ndarray:
+    return rot([0, 0, 1], heading) @ rot([0, 1, 0], tilt) @ R_HOME @ rot([0, 0, 1], twist)
+
 class PhoneToTargetPose:
+    """핸드폰 → 목표 자세. 위치·회전 모두 마우스처럼 누른 순간부터 쌓이고, 범위 끝에서 넘친 양은 버린다.
+    SO-101 손목엔 좌우로 꺾는 관절이 없어서 "제자리에서 옆을 봐" 는 못 함 → 로봇이 할 수 있는 회전으로 바꾼다 (책상 스탠드 조명처럼)
+      옆으로 돌리기 (yaw)   → 팔 전체가 pan 축 중심으로 돎 (그리퍼 끝 위치도 원호로)
+      앞으로 숙이기 (pitch) → 그리퍼 숙임 (TILT_RANGE 안)
+      양옆 기울이기 (roll)  → 그리퍼 비틀림 (TWIST_RANGE 안)"""
     def __init__(self, robot: placo.RobotWrapper):
         self.isEnabled = False
         self.current_robot_pose = robot.get_T_world_frame(EE_FRAME)
         self.new_robot_pose = robot.get_T_world_frame(EE_FRAME)
         self.phone_delta = np.eye(4)
+        self.overflow = np.zeros(3)        # 벽에서 버린 이동량 누적
+        self.angle_overflow = np.zeros(2)  # 각도 끝에서 버린 숙임·비틀림 누적
 
     def update(self, robot: placo.RobotWrapper, action: dict):
         t = pin.exp6(np.array([action["target_x"], action["target_y"], action["target_z"], 0.0, 0.0, 0.0]))
@@ -193,15 +227,26 @@ class PhoneToTargetPose:
             if not self.isEnabled:
                 # Store the current pose when enabled is first pressed
                 self.current_robot_pose = robot.get_T_world_frame(EE_FRAME)  # Get the current pose of the robot's end-effector
-        
-            self.new_robot_pose = self.current_robot_pose @ np.array(r)
-            self.new_robot_pose[:3, 3] = self.new_robot_pose[:3, 3] + np.array(t)[:3, 3] 
+                self.anchor_angles = gripper_angles(self.current_robot_pose[:3, :3])
+                self.overflow, self.angle_overflow = np.zeros(3), np.zeros(2)
 
-            # 벽(작업 공간 끝)에서 멈추고, 넘친 만큼은 버린다: 넘친 양만큼 기준을 같이 옮김
+            yaw, pitch, roll = phone_angles(np.array([action["target_wx"], action["target_wy"], action["target_wz"]]))
+            heading, tilt, twist = self.anchor_angles
+
+            # 위치: 팔 전체 회전(yaw) + 손 이동량. 벽에서 멈추고, 넘친 만큼은 버린다: 넘친 양을 누적해서 빼 둠
             # (= 손 총 이동량에서 넘친 양을 뺀 것과 같음. 안 하면 넘친 만큼 되돌아와야 로봇이 움직임)
-            # 예: 벽까지 10cm, 손 30cm → 로봇 10cm, 기준 -20cm. 손 5cm 되돌림 → -20 + 25 = 5 → 바로 5cm 돌아옴
-            clipped = clip_workspace(self.new_robot_pose[:3, 3])
-            self.current_robot_pose[:3, 3] += clipped - self.new_robot_pose[:3, 3]
+            # 예: 벽까지 10cm, 손 30cm → 로봇 10cm, 버림 -20cm. 손 5cm 되돌림 → 25 - 20 = 5 → 바로 5cm 돌아옴
+            pos = PAN_AXIS + rot([0, 0, 1], yaw) @ (self.current_robot_pose[:3, 3] - PAN_AXIS) + np.array(t)[:3, 3] + self.overflow
+            clipped = clip_workspace(pos)
+            self.overflow += clipped - pos
+
+            # 회전: 숙임·비틀림도 같은 방식 (각도 끝에서 멈추고 넘친 만큼 버림)
+            want = np.array([tilt + pitch, twist + roll]) + self.angle_overflow
+            angles = np.clip(want, [TILT_RANGE[0], TWIST_RANGE[0]], [TILT_RANGE[1], TWIST_RANGE[1]])
+            self.angle_overflow += angles - want
+
+            self.new_robot_pose = np.eye(4)
+            self.new_robot_pose[:3, :3] = gripper_rotation(heading + yaw, *angles)
             self.new_robot_pose[:3, 3] = clipped
 
         self.isEnabled = action["enabled"]
