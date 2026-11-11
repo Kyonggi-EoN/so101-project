@@ -151,27 +151,19 @@ def phone_to_robot_action(phone_to_robot: MapPhoneActionToRobotAction, phone_act
 
 def make_action_source(source: str):
     # 둘 다 같은 모양의 action dict (enabled, target_x..wz, gripper_vel) 를 돌려준다
-        if source == "phone":
-            #phone teleop config
-            teleop_config = PhoneConfig(phone_os = PhoneOS.ANDROID)
-            teleop_device = Phone(teleop_config)
-    
-            # phone -> robot action mapping changer
-            phone_to_robot = MapPhoneActionToRobotAction(platform=teleop_config.phone_os)
-    
-            # Connecting the phone (캘리브레이션 터치까지 여기서 기다린다)
-            teleop_device.connect()
-    
-            orientation_clutch = OrientationClutch()
+    if source == "phone":
+        teleop_config = PhoneConfig(phone_os=PhoneOS.ANDROID)
+        teleop_device = Phone(teleop_config)
+        phone_to_robot = MapPhoneActionToRobotAction(platform=teleop_config.phone_os)  # enabled, gripper_vel 매핑
+        teleop_device.connect()  # 캘리브레이션 터치까지 여기서 기다린다
+        orientation_clutch = OrientationClutch()
 
-            def read_action():
-                return phone_to_robot_action(phone_to_robot, orientation_clutch.apply(teleop_device.get_action()))
-            return read_action
-        
-        else:
-            from test_src.keyboard_ik_viz import KeyboardSource
-            keyboard = KeyboardSource()
-            return keyboard.get_action
+        def read_action():
+            return phone_to_robot_action(phone_to_robot, orientation_clutch.apply(teleop_device.get_action()))
+        return read_action
+
+    from test_src.keyboard_ik_viz import KeyboardSource  # 개발용 도구 (rerun 로그·csv 녹화와 같이 test_src 에)
+    return KeyboardSource().get_action
 
 class IKSolver:
     def __init__(self, robot: placo.RobotWrapper):
@@ -279,10 +271,10 @@ class SafetyFilter:
 
         # Limit the step size based on the last robot pose
         new_robot_pose[:3, 3] = limit_step(self.last_robot_pose[:3, 3], new_robot_pose[:3, 3])
-        
+
         # Update the last robot pose for the next iteration
         self.last_robot_pose = new_robot_pose.copy()
-        
+
         return new_robot_pose
 
 def main():
@@ -312,7 +304,7 @@ def main():
 
     # ── ④ 클러치 상태 ─────────────────────────────────────────
     phone_to_target = PhoneToTargetPose(robot)
-    
+
 
     # ── 안전 장치 상태 ─────────────────────────────────────────
     safety_filter = SafetyFilter(phone_to_target.current_robot_pose)
