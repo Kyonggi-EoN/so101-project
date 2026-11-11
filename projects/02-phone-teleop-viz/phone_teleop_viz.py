@@ -42,7 +42,6 @@ TWIST_RANGE = np.deg2rad([-90.0, 90.0])  # 그리퍼 비틀림 범위
 ANGLE_RANGE = np.array([PAN_RANGE, TILT_RANGE, TWIST_RANGE]).T  # [최소들, 최대들] (돌림, 숙임, 비틀림)
 R_HOME = np.array([[0.0, 0.0, 1.0], [0.0, 1.0, 0.0], [-1.0, 0.0, 0.0]])  # 숙임·비틀림 0 인 그리퍼 방향: 뻗은 방향(z) 앞, y 왼쪽, x 아래 (관절 0 자세)
 PAN_AXIS = np.array([0.039, 0.0, 0.0])  # 베이스 회전(shoulder_pan) 축이 지나는 점. 축은 월드 z (URDF 에서 측정)
-REGULARIZATION_WEIGHT = 0.000001  # task 정규화 가중치
 URDF_PATH = "projects/02-phone-teleop-viz/so101-description/so101_new_calib.urdf"
 EE_FRAME = "gripper_frame_link"
 
@@ -171,7 +170,6 @@ class IKSolver:
         self.robot = robot
         self.solver = placo.KinematicsSolver(robot)
         self.solver.mask_fbase(True)
-        self.solver.add_regularization_task(REGULARIZATION_WEIGHT) # task 정규화
         self.robot.set_velocity_limits(MAX_JOINT_VELOCITY)  # 모든 관절에 같은 값
         self.solver.enable_velocity_limits(True)
         self.solver.dt = 1 / FPS
