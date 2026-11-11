@@ -319,10 +319,10 @@ def main():
     while True:
         t0 = time.perf_counter()
 
-        # ── ①② 입력 ──
+        # ── 입력 ──
         action = read_action()
 
-        # ── ③ 변화량 ──
+        # ── 변화량 ──
         new_robot_pose = phone_to_target.update(robot,action)
 
         # ── 안전 장치: 공간 제한 → 최대 이동량 ──
