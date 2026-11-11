@@ -14,9 +14,23 @@ uv run lerobot-teleoperate `
 > 이제는 카메라 영상과 실시간으로 기록되는 모터 센서 그래프, 즉 데이터셋을 다루어야한다.
 > 아래의 record 명령을 통해 기록이 시작되며 rerun에서 실시간으로 기록 현황을 모니터링 할 수 있다.
 
+
+uv run lerobot-teleoperate `
+  --teleop.type=so101_leader `
+  --teleop.port=COM5 `
+  --teleop.id=leader `
+  --robot.type=so101_follower `
+  --robot.port=COM7 `
+  --robot.id=follower `
+  --robot.cameras='{ 
+      wrist: {type: opencv, index_or_path: COM9, width: 640, height: 480, fps: 30}
+  }' `
+  --display_data=true
+
+
 ```powershell
 uv run lerobot-record `
-    --robot.type=so101_follower --robot.port=COM6 --robot.id=follower `
+    --robot.type=so101_follower --robot.port=COM7 --robot.id=follower `
     --robot.calibration_dir=calibration/robots/so_follower `
     --teleop.type=so101_leader --teleop.port=COM5 --teleop.id=leader `
     --teleop.calibration_dir=calibration/teleoperators/so_leader `
@@ -24,8 +38,8 @@ uv run lerobot-record `
         top: {type: opencv, index_or_path: /dev/cam_top, width: 640, height: 480, fps: 25},
         wrist: {type: opencv, index_or_path: /dev/cam_wrist, width: 640, height: 480, fps: 25},
     }' `
-    --dataset.single_task=${TASK_NAME} `
-    --dataset.repo_id=${HF_USER}/${TASK_NAME} `
+    --dataset.single_task=${Transfortation} `
+    --dataset.repo_id=${qkrtpah1}/${Transfortation} `
     --dataset.num_episodes=10 `
     --dataset.episode_time_s=15 `
     --dataset.reset_time_s=3 `
@@ -36,6 +50,7 @@ uv run lerobot-record `
 ``` 
 > 수정 요망
 
+> display_data=true 는 rerun영상 띄우는거라 한띄우고 하는게 안정적이다.
 > 우리가 촬영한 5~15초 짜리 영상 한 개 -> 에피소드
 >
 --dataset.episode_time_s=60 : 각 데이터 에피소드 recording 시간 (default: 60초) \

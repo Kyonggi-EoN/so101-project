@@ -92,7 +92,7 @@ leader 팔을 손으로 움직이면 follower 팔이 따라온다.
 
 ```powershell
 uv run lerobot-teleoperate `
-    --robot.type=so101_follower --robot.port=COM6 --robot.id=follower `
+    --robot.type=so101_follower --robot.port=COM7 --robot.id=follower `
     --robot.calibration_dir=calibration/robots/so_follower `
     --teleop.type=so101_leader --teleop.port=COM5 --teleop.id=leader `
     --teleop.calibration_dir=calibration/teleoperators/so_leader `
@@ -114,6 +114,16 @@ uv run lerobot-teleoperate `
 > 팔은 동아리에 한 대뿐이다.
 
 줄 끝의 백틱(`` ` ``)은 **명령이 다음 줄로 이어진다**는 뜻이다. 뒤에 공백이 있으면 안 된다.
+
+uv run lerobot-calibrate `
+    --robot.type=so101_follower `
+    --robot.port=COM7 `
+    --robot.id=follower
+
+uv run lerobot-calibrate `
+    --teleop.type=so101_leader `
+    --teleop.port=COM5 `
+    --teleop.id=leader
 
 ### 옵션 설명
 
