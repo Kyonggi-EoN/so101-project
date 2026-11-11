@@ -22,12 +22,14 @@ from lerobot.utils.rotation import Rotation
 import pinocchio as pin
 import numpy as np
 import placo_utils.visualization
+import meshcat.geometry as g
+import meshcat.transformations as tf
 import placo
 
 
 FPS = 30.0
 MAX_EE_STEP = 0.05  # end-effector 한 스텝당 최대 이동량 (m)
-PHONE_ROTATION_SCALE = 1.0  # 핸드폰 회전 × 1.0 = 로봇 회전 (arm_rotation 으로 로봇이 할 수 있는 회전만 주문). 예전 0.2 는 축이 어긋났던 때 값
+PHONE_ROTATION_SCALE = 1.0  # 핸드폰 회전 × 1.0 = 로봇 회전. 로봇이 할 수 있는 회전으로 바꿔서 주문하므로 (PhoneToTargetPose) 1:1. 예전 0.2 는 축이 어긋났던 때 값
 PHONE_POSITION_SCALE = 0.4  # 핸드폰 이동량 × 0.4 = 로봇 이동량. 1:1 이면 손(0.5~1.8m)이 로봇 도달(0.37m)보다 훨씬 커서 범위 끝에 붙음 (lerobot 예제 0.5)
 MAX_JOINT_VELOCITY = 2.0  # 관절 최대 속도 (rad/s, 약 170°/s). 1.0 은 조작감이 너무 느림, URDF 기본 10 은 너무 빠름
 EE_BOUNDS = {"min": [0.0, -1.0, 0.05], "max": [1.0, 1.0, 1.0]}  # 작업 공간 (m). 바닥 z ≥ 5cm(책상 여유), 뒤 x ≥ 0 만 막고 나머지는 팔 도달 구가 정함
@@ -89,9 +91,25 @@ def limit_step(last_pos: np.ndarray, new_pos: np.ndarray, max_ee_step: float=MAX
     else:
         return new_pos
 
-def show(viz, robot):
+def show(viz, robot, target_pose):
     viz.display(robot.state.q)
     placo_utils.visualization.robot_frame_viz(robot, EE_FRAME)
+    placo_utils.visualization.point_viz("target", target_pose[:3, 3], radius=0.008)  # 빨간 점 = 벽에서 자른 뒤 목표. 항상 아래 범위 안에 있어야 함
+
+def workspace_viz():
+    """작업 공간을 반투명으로 그린다 (한 번). 파랑 구 = 팔이 닿는 범위, 주황 판 = 상자의 바닥(z ≥ 0.05)·베이스 뒤(x ≥ 0)
+    상자의 나머지 면(±1m)은 구 바깥이라 안 그림. 목표는 구 안 + 바닥 위 + 뒤 벽 앞에만 있어야 함"""
+    vis = placo_utils.visualization.get_viewer()["workspace"]
+    c, R = SHOULDER_CENTER, REACH_RADIUS
+    x0, z0 = EE_BOUNDS["min"][0], EE_BOUNDS["min"][2]
+    blue = g.MeshLambertMaterial(color=0x3399FF, transparent=True, opacity=0.15)
+    orange = g.MeshLambertMaterial(color=0xFF9900, transparent=True, opacity=0.25)
+    vis["sphere"].set_object(g.Sphere(R), blue)
+    vis["sphere"].set_transform(tf.translation_matrix(c))
+    vis["floor"].set_object(g.Box([c[0] + R - x0, 2 * R, 0.002]), orange)     # 바닥: 뒤 벽부터 구 앞 끝까지
+    vis["floor"].set_transform(tf.translation_matrix([(x0 + c[0] + R) / 2, c[1], z0]))
+    vis["back"].set_object(g.Box([0.002, 2 * R, c[2] + R - z0]), orange)      # 뒤 벽: 바닥부터 구 위 끝까지
+    vis["back"].set_transform(tf.translation_matrix([x0, c[1], (z0 + c[2] + R) / 2]))
 
 class OrientationClutch:
     """방향 클러치: 누르는 순간을 새 기준으로 잡는다 (앞 = 그 순간 핸드폰이 향한 쪽, 회전 = 0).
@@ -278,6 +296,7 @@ def main():
     # 시각화는 입력 소스보다 먼저 (핸드폰 connect() 가 캘리브레이션 터치까지 멈추므로 브라우저를 먼저 열어 둔다)
     viz = placo_utils.visualization.robot_viz(robot)
     placo_utils.visualization.frame_viz("world", np.eye(4))
+    workspace_viz()
 
     logger = None
     if args.log == "rerun":
@@ -324,7 +343,7 @@ def main():
         print_log(logger, args, action, phone_to_target.phone_delta ,phone_to_target.current_robot_pose, new_robot_pose, actual_pose)
         if recorder:
             recorder.log(action, phone_to_target.current_robot_pose, new_robot_pose, actual_pose)
-        show(viz, robot)
+        show(viz, robot, new_robot_pose)
 
         precise_sleep(max (1.0 / FPS - (time.perf_counter() - t0), 0.0))
 
