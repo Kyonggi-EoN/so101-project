@@ -204,11 +204,12 @@ def phone_angles(rotvec: np.ndarray):
 
 def gripper_angles(R: np.ndarray):
     """그리퍼 방향 → (heading, tilt, twist). R = Rz(heading)·Ry(tilt)·R_HOME·Rz(twist)
-    heading: 위에서 본 방향, tilt: 숙임 (아래 +), twist: 자기 축(뻗은 방향) 비틀림"""
-    z = R[:, 2]  # 그리퍼 뻗은 방향
-    heading, tilt = np.arctan2(z[1], z[0]), np.arcsin(-np.clip(z[2], -1.0, 1.0))
-    M = R_HOME.T @ rot([0, 1, 0], -tilt) @ rot([0, 0, 1], -heading) @ R  # = Rz(twist)
-    return heading, tilt, np.arctan2(M[1, 0], M[0, 0])
+    heading: 위에서 본 방향, tilt: 숙임 (아래 +), twist: 자기 축(뻗은 방향) 비틀림
+    phone_angles 와 같은 방법: 앞축(뻗은 방향 = 3열)의 정사영 → heading, 높이 → tilt, 옆축·면축의 높이(3행) → twist"""
+    heading = np.arctan2(R[1, 2], R[0, 2])
+    tilt = np.arcsin(-np.clip(R[2, 2], -1.0, 1.0))
+    twist = np.arctan2(R[2, 1], -R[2, 0])  # 면축(그리퍼 x)은 비틀기 전 아래를 봐서 부호 뒤집음
+    return heading, tilt, twist
 
 def gripper_rotation(heading: float, tilt: float, twist: float) -> np.ndarray:
     return rot([0, 0, 1], heading) @ rot([0, 1, 0], tilt) @ R_HOME @ rot([0, 0, 1], twist)
