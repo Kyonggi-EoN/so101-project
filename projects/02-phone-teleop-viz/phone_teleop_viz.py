@@ -136,7 +136,7 @@ class OrientationClutch:
         return phone_action
 
 def phone_to_robot_action(phone_to_robot: MapPhoneActionToRobotAction, phone_action: dict) -> dict:
-    """핸드폰 축 → 로봇 축. 들고 있는 자세: 평평하게(화면 위), 핸드폰 위쪽 끝 = 앞.
+    """핸드폰 축 → 로봇 축. 들고 있는 자세: 세워 듦(화면은 나를 향함), 후면 카메라 = 앞, 위쪽 끝 = 위.
     핸드폰으로 확인 (2026-11-10): 핸드폰 축이 이미 로봇 축과 같다 → 변환 없이 그대로
     (teleop 패키지가 핸드폰 값을 FLU = 앞(x)·왼쪽(y)·위(z) 로 바꿔서 줌. 로봇 축도 x 앞, y 왼쪽, z 위)
     lerobot 매핑(x = -y, y = x)은 이 자세에서 앞뒤가 좌우로 가서 위치·회전만 덮어쓴다. enabled, gripper_vel 은 lerobot 그대로"""
@@ -205,10 +205,10 @@ def phone_angles(rotvec: np.ndarray):
 def gripper_angles(R: np.ndarray):
     """그리퍼 방향 → (heading, tilt, twist). R = Rz(heading)·Ry(tilt)·R_HOME·Rz(twist)
     heading: 위에서 본 방향, tilt: 숙임 (아래 +), twist: 자기 축(뻗은 방향) 비틀림
-    phone_angles 와 같은 방법: 앞축(뻗은 방향 = 3열)의 정사영 → heading, 높이 → tilt, 옆축·면축의 높이(3행) → twist"""
+    phone_angles 와 같은 방법: 앞축(뻗은 방향 = 3열)의 정사영 → heading, 높이 → tilt, 옆축·위축의 높이(3행) → twist"""
     heading = np.arctan2(R[1, 2], R[0, 2])
     tilt = np.arcsin(-np.clip(R[2, 2], -1.0, 1.0))
-    twist = np.arctan2(R[2, 1], -R[2, 0])  # 면축(그리퍼 x)은 비틀기 전 아래를 봐서 부호 뒤집음
+    twist = np.arctan2(R[2, 1], -R[2, 0])  # 위축 = 그리퍼 −x (그리퍼 x 는 아래쪽 면) 라서 −R20
     return heading, tilt, twist
 
 def gripper_rotation(heading: float, tilt: float, twist: float) -> np.ndarray:
