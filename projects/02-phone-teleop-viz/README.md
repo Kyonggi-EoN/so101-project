@@ -260,7 +260,7 @@ RuntimeError: Frame with name so101_new_calib not found
 - 실제 로봇 연결: 라디안 → 도 변환, `SO101Follower.send_action`, 기준 자세를 실제 관절값에서 읽기, 처음엔 배율·속도를 작게
 - 그리퍼 열고 닫기 (lerobot `GripperVelocityToJoint` 참고)
 - 오차 감시 → 정지 (물체에 막혀 계속 밀어붙이는 상황 방지)
-- 베이스 근처를 막는 기둥 모양 벽, meshcat 에 작업 공간 표시
+- 베이스 근처를 막는 기둥 모양 벽
 - MuJoCo 물리 시뮬레이션 (`so101-description/` 에 `scene.xml` 이 이미 있음)
 - 정량 평가: 추종 오차, 지연, 물체 옮기기 성공률
 
@@ -269,6 +269,6 @@ RuntimeError: Frame with name so101_new_calib not found
 ## 참고 자료
 
 - lerobot 핸드폰 텔레오퍼레이션: `third_party/lerobot/teleoperators/phone/` (`Phone`, `MapPhoneActionToRobotAction`), 예제 phone_to_so100
-- placo 문서: https://placo.readthedocs.io , 예제 `kinematics/6axis_trajectory.py` (https://github.com/Rhoban/placo-examples)
+- placo 문서: https://placo.readthedocs.io , 예제 `kinematics/6axis_targets.py` (https://github.com/Rhoban/placo-examples)
 - SO-101 URDF·메시: https://github.com/TheRobotStudio/SO-ARM100 (`Simulation/SO101/so101_new_calib.urdf`)
 - 참고 예제 분석 PDF: `docs/example_analysis/`
