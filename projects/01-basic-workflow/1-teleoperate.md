@@ -96,7 +96,7 @@ uv run lerobot-teleoperate `
     --robot.calibration_dir=calibration/robots/so_follower `
     --teleop.type=so101_leader --teleop.port=COM5 --teleop.id=leader `
     --teleop.calibration_dir=calibration/teleoperators/so_leader `
-    --robot.cameras="{ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30} }" `
+    --robot.cameras="{ top: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30} }" `
     --fps=30 `
     --display_data=true
 ```
@@ -114,7 +114,7 @@ uv run lerobot-teleoperate `
 > 팔은 동아리에 한 대뿐이다.
 
 줄 끝의 백틱(`` ` ``)은 **명령이 다음 줄로 이어진다**는 뜻이다. 뒤에 공백이 있으면 안 된다.
-
+```powershell
 uv run lerobot-calibrate `
     --robot.type=so101_follower `
     --robot.port=COM7 `
@@ -124,7 +124,7 @@ uv run lerobot-calibrate `
     --teleop.type=so101_leader `
     --teleop.port=COM5 `
     --teleop.id=leader
-
+```
 ### 옵션 설명
 
 | 옵션 | 무엇 |

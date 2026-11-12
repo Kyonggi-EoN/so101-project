@@ -1,11 +1,15 @@
 # 2. 데이터 녹화
 ```powershell
+lerobot-find-port
+```
+
+```powershell
 uv run lerobot-teleoperate `
-    --robot.type=so101_follower --robot.port=COM6 --robot.id=follower `
+    --robot.type=so101_follower --robot.port=COM7 --robot.id=follower `
     --robot.calibration_dir=calibration/robots/so_follower `
     --teleop.type=so101_leader --teleop.port=COM5 --teleop.id=leader `
     --teleop.calibration_dir=calibration/teleoperators/so_leader `
-    --robot.cameras="{ top: {type: opencv, index_or_path: 0, width: 640, height: 480, fps: 30} }" `
+    --robot.cameras="{ top: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30} }" `
     --fps=30 `
     --display_data=true
 ```
@@ -14,19 +18,16 @@ uv run lerobot-teleoperate `
 > 이제는 카메라 영상과 실시간으로 기록되는 모터 센서 그래프, 즉 데이터셋을 다루어야한다.
 > 아래의 record 명령을 통해 기록이 시작되며 rerun에서 실시간으로 기록 현황을 모니터링 할 수 있다.
 
-
+```powershell
 uv run lerobot-teleoperate `
-  --teleop.type=so101_leader `
-  --teleop.port=COM5 `
-  --teleop.id=leader `
-  --robot.type=so101_follower `
-  --robot.port=COM7 `
-  --robot.id=follower `
-  --robot.cameras='{ 
-      wrist: {type: opencv, index_or_path: COM9, width: 640, height: 480, fps: 30}
-  }' `
-  --display_data=true
-
+    --robot.type=so101_follower --robot.port=COM7 --robot.id=follower `
+    --robot.calibration_dir=calibration/robots/so_follower `
+    --teleop.type=so101_leader --teleop.port=COM5 --teleop.id=leader `
+    --teleop.calibration_dir=calibration/teleoperators/so_leader `
+    --robot.cameras="{ top: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30} }" `
+    --fps=30 `
+    --display_data=true
+```
 
 ```powershell
 uv run lerobot-record `
@@ -34,18 +35,16 @@ uv run lerobot-record `
     --robot.calibration_dir=calibration/robots/so_follower `
     --teleop.type=so101_leader --teleop.port=COM5 --teleop.id=leader `
     --teleop.calibration_dir=calibration/teleoperators/so_leader `
-    --robot.cameras='{ 
-        top: {type: opencv, index_or_path: /dev/cam_top, width: 640, height: 480, fps: 25},
-        wrist: {type: opencv, index_or_path: /dev/cam_wrist, width: 640, height: 480, fps: 25},
-    }' `
-    --dataset.single_task=${Transfortation} `
-    --dataset.repo_id=${qkrtpah1}/${Transfortation} `
+    --robot.cameras="{ top: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30} }" `
+    --dataset.single_task="pick up the object" `
+    --dataset.repo_id=qkrtpah1/Transportation `
+    --dataset.root=C:/lerobot_data/qkrtpah1/Transportation `
     --dataset.num_episodes=10 `
     --dataset.episode_time_s=15 `
     --dataset.reset_time_s=3 `
-    --display_data=true `
+    --display_data=false `
     --dataset.push_to_hub=false `
-    --resume=true
+    --dataset.streaming_encoding=true --dataset.encoder_threads=2
 
 ``` 
 > 수정 요망
