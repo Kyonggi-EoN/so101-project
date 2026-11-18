@@ -12,6 +12,7 @@ uv run lerobot-teleoperate `
     --robot.cameras="{ top: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30} }" `
     --fps=30 `
     --display_data=true
+
 ```
 > 위와 같이 display_data=ture를 통해 teleoperate 명령을 하면 rerun이 켜지며 카메라 화면과 모터 움직임 그래프가 나오는 것을 볼 수 있었다.
 > 위의 코드는 카메라가 노트북 카메라를 통해 열릴 것이다.
@@ -90,8 +91,8 @@ uv run lerobot-record `
     --teleop.calibration_dir=calibration/teleoperators/so_leader `
     --robot.cameras="{ top: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30} }" `
     --dataset.single_task="pick up the object" `
-    --dataset.repo_id=qkrtpah1/task3 `
-    --dataset.root=C:/lerobot_data/qkrtpah1/task3 `
+    --dataset.repo_id=qkrtpah1/task4 `
+    --dataset.root=C:/lerobot_data/qkrtpah1/task4 `
     --dataset.num_episodes=10 `
     --dataset.episode_time_s=25 `
     --dataset.reset_time_s=3 `

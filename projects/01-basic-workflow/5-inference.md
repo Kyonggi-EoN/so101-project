@@ -12,3 +12,15 @@
 
 ### 
 > 학습한 정책을 실제 로봇에서 실행하기. 체크포인트 고르기, 안전하게 처음 돌리기.
+
+lerobot-rollout `
+  --strategy.type=base `
+  --robot.type=so101_follower `
+  --robot.port=COM7 `
+  --robot.id=follower `
+  --robot.cameras="{ top: {type: opencv, index_or_path: 1, width: 640, height: 480, fps: 30} }" `
+  --policy.path=./act_task1 `
+  --policy.device=cuda `
+  --task="pick up the object" `
+  --display_data=true `
+  --duration=120
