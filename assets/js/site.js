@@ -1,8 +1,25 @@
-// 사이트 공통 스크립트. EoN 홈페이지의 기능 파일(assets/js/modules/)을 그대로 불러 씁니다.
-// 그래서 홈페이지에서 메뉴·바람을 고치면 여기도 같이 바뀝니다.
-// - 실제 사이트에서는 같은 주소(kyonggi-eon.github.io)라 바로 불러오고, 로컬 미리보기에서도
-//   GitHub Pages가 다른 주소의 요청을 허용해 줘서 불러올 수 있습니다.
-// - 파일마다 따로 불러와서, 하나가 받아지지 않아도 나머지는 그대로 움직입니다(못 불러오면 그 기능만 빠짐).
+// 사이트 공통 스크립트.
+// 1) 영상: 미리보기 사진을 누르면 그 자리를 유튜브 재생기로 바꿉니다 (_includes/sections/videos.html).
+// 2) 메뉴·바람: EoN 홈페이지의 기능 파일(assets/js/modules/)을 그대로 불러 씁니다.
+//    그래서 홈페이지에서 메뉴·바람을 고치면 여기도 같이 바뀝니다.
+//    실제 사이트에서는 같은 주소(kyonggi-eon.github.io)라 바로 불러오고, 로컬 미리보기에서도
+//    GitHub Pages가 다른 주소의 요청을 허용해 줘서 불러올 수 있습니다.
+//    파일마다 따로 불러와서, 하나가 받아지지 않아도 나머지는 그대로 움직입니다(못 불러오면 그 기능만 빠짐).
+
+for (const link of document.querySelectorAll("[data-video]")) {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    const player = document.createElement("iframe");
+    player.src = `https://www.youtube-nocookie.com/embed/${link.dataset.video}?autoplay=1`;
+    player.title = link.getAttribute("aria-label").replace(/^재생: /, "");
+    player.allow = "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share";
+    player.referrerPolicy = "strict-origin-when-cross-origin";
+    player.allowFullscreen = true;
+    link.replaceWith(player);
+    player.focus();
+  });
+}
+
 const MAIN = "https://kyonggi-eon.github.io/assets/js/modules/";
 
 const FEATURES = [

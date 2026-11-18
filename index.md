@@ -16,7 +16,9 @@ actions:
     icon: github
     style: ghost
 sections:
+  - videos
   - projects
+  - timeline
   - type: content
     id: start
     title: 시작하기

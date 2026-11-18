@@ -1,0 +1,22 @@
+{%- comment -%}
+  진행 경과. 데이터: _data/timeline.yml
+  EoN 홈페이지 소개 페이지의 연혁(_includes/sections/history.html)과 같은 마크업이라 모양도 같습니다.
+  옵션: title, eyebrow, heading(false면 제목줄 숨김)
+{%- endcomment -%}
+{%- assign s = include.section -%}
+<section class="section" id="timeline">
+  <div class="container">
+    {%- include section-head.html section=s title="진행 경과" %}
+    <ol class="timeline">
+      {%- for h in site.data.timeline %}
+      <li class="timeline__item">
+        <span class="timeline__date">{{ h.date }}</span>
+        <div class="timeline__body">
+          {%- if h.title %}<strong>{% if h.url %}<a href="{% include link-url.html url=h.url %}">{{ h.title }}</a>{% else %}{{ h.title }}{% endif %}</strong>{% endif %}
+          {%- if h.text %}<p>{{ h.text }}</p>{% endif %}
+        </div>
+      </li>
+      {%- endfor %}
+    </ol>
+  </div>
+</section>

@@ -16,6 +16,8 @@ Jekyll 사이트입니다. 홈페이지와 같은 원칙으로 **콘텐츠와 �
 |---|---|---|
 | 프로젝트 페이지 추가 | `_templates/project.md`를 `_projects/<폴더 이름>.md`로 복사해 채움, 사진은 `assets/images/projects/` | 필요 없음 |
 | 첫 화면 소개 문구 · 버튼 · '시작하기' 글 · 섹션 순서 | `index.md` (머리말과 본문) | 필요 없음 |
+| 첫 화면 '영상' (유튜브) | `_data/videos.yml` — 영상 ID·날짜·길이·제목·설명 | 필요 없음 |
+| 첫 화면 '진행 경과' | `_data/timeline.yml` | 필요 없음 |
 | 첫 화면 '문서' 목록 | `_data/docs.yml` | 필요 없음 |
 | 홈페이지 메뉴 · 푸터 연락처 | `_data/navigation.yml`, `_data/social.yml` (홈페이지와 같게 유지) | 필요 없음 |
 | 이 사이트에만 있는 모양 (문서 목록 등) | `assets/css/site.css` | CSS |
@@ -23,19 +25,26 @@ Jekyll 사이트입니다. 홈페이지와 같은 원칙으로 **콘텐츠와 �
 
 ```
 .
-├── index.md                 첫 화면: 제목 칸 → 프로젝트 → 시작하기 → 문서
+├── index.md                 첫 화면: 제목 칸 → 영상 → 프로젝트 → 진행 경과 → 시작하기 → 문서
 ├── 404.md
 ├── _projects/               프로젝트 페이지   <이름>.md → /so101-project/projects/<이름>/
 ├── _templates/project.md    프로젝트 페이지 템플릿 (빌드에 포함되지 않음)
-├── _data/                   docs(문서 목록), navigation·social(홈페이지 메뉴·연락처), labels(상태 이름)
+├── _data/                   videos(영상), timeline(진행 경과), docs(문서 목록),
+│                            navigation·social(홈페이지 메뉴·연락처), labels(상태 이름)
 ├── _layouts/                default → page / project
-├── _includes/               head, header, footer, sections/(projects, docs), 작은 조각들
+├── _includes/               head, header, footer, sections/(videos, projects, timeline, docs), 작은 조각들
 ├── assets/css/site.css      이 사이트에만 있는 모양
-├── assets/js/site.js        홈페이지의 메뉴·바람 스크립트를 불러옴
+├── assets/js/site.js        영상 재생 + 홈페이지의 메뉴·바람 스크립트를 불러옴
 ├── assets/images/projects/  프로젝트 사진
 ├── .github/workflows/pages.yml   빌드·배포
 └── _config.yml              사이트 설정 (baseurl: /so101-project)
 ```
+
+### 영상 올리기
+
+동아리 유튜브 채널(@Kyonggi-EoN)에 올린 뒤 `_data/videos.yml` 맨 위에 한 덩어리를 추가합니다.
+`id`는 주소 `https://youtu.be/<id>`의 `<id>` 부분입니다. 첫 화면에는 유튜브 미리보기 사진만 보이고, 누르면 그 자리에서 재생됩니다.
+'진행 경과'에도 남길 만한 일이면 `_data/timeline.yml`에 한 줄 추가합니다.
 
 ### 프로젝트 페이지 올리기
 

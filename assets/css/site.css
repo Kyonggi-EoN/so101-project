@@ -79,3 +79,84 @@
 .section__head + .prose {
   margin-top: var(--space-6);
 }
+
+/* 영상 (_includes/sections/videos.html): 16:9 미리보기 사진 + 재생 단추, 아래에 날짜·제목·설명.
+   사진을 누르면 assets/js/site.js가 그 자리를 유튜브 재생기(iframe)로 바꿉니다.
+   글자 크기·색은 홈페이지 카드(.card__title, .card__text, .card__foot)와 맞춥니다. */
+.video {
+  margin: 0;
+}
+
+.video__frame {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: var(--bg-subtle);
+}
+
+.video__frame iframe,
+.video__thumb,
+.video__thumb img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+
+.video__thumb img {
+  object-fit: cover;
+  transition: transform var(--dur) var(--ease);
+}
+
+.video__thumb:hover img {
+  transform: scale(1.02);
+}
+
+/* 재생 단추: 사진 왼쪽 아래 검은 칸(모서리 라운드 없음). 마우스를 올리면 빨강 */
+.video__play {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  background: var(--text);
+  color: var(--on-brand);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  transition: background var(--dur) var(--ease);
+}
+
+.video__thumb:hover .video__play,
+.video__thumb:focus-visible .video__play {
+  background: var(--brand-strong);
+}
+
+.video__play .icon {
+  fill: currentColor;
+}
+
+.video__body {
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-4);
+}
+
+.video__date {
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.video__title {
+  font-size: var(--fs-lg);
+  font-weight: 700;
+}
+
+.video__text {
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}

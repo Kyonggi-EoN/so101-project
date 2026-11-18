@@ -1,0 +1,16 @@
+# 첫 화면 '영상' 목록. 위에서부터 순서대로 보입니다 (최근 것을 위에).
+# id는 유튜브 주소의 영상 ID입니다: https://youtu.be/<id> 또는 https://www.youtube.com/watch?v=<id>
+# date·length는 따옴표로 감싸야 숫자로 바뀌지 않습니다. length(영상 길이)는 재생 단추 옆에 보입니다.
+# 미리보기 사진은 유튜브가 만든 것을 씁니다.
+
+- id: oPcq0vpM-YA
+  date: "2026.11.17"
+  length: "0:33"
+  title: 성과전시회 시연 데이터 수집
+  text: leader 팔(사람이 잡고 조종하는 쪽)로 follower 팔을 직접 움직이며, 전시회 시연에 쓸 학습 데이터를 모으는 장면입니다.
+
+- id: jZZtyKJolhE
+  date: "2026.09.01"
+  length: "1:10"
+  title: ACT 정책으로 움직이기
+  text: 사람의 시연을 보고 따라 하도록 학습하는 모방학습 정책 ACT를 100,000 step 학습해 로봇팔을 움직였습니다. 왼쪽은 카메라 위치를 잡기 전, 오른쪽은 잡은 뒤입니다.

@@ -1,0 +1,33 @@
+{%- comment -%}
+  영상 목록. 데이터: _data/videos.yml (유튜브 영상 ID)
+  처음에는 유튜브 미리보기 사진만 보이고, 누르면 그 자리에서 재생됩니다(assets/js/site.js).
+  그래서 누르기 전에는 유튜브를 불러오지 않습니다. JS가 꺼져 있으면 유튜브로 가는 링크로 동작합니다.
+  미리보기 사진은 큰 것(maxresdefault)을 쓰고, 유튜브에 없으면 작은 것(hqdefault)으로 바꿉니다.
+  옵션: title, eyebrow, heading(false면 제목줄 숨김)
+{%- endcomment -%}
+{%- assign s = include.section -%}
+{%- if site.data.videos.size > 0 %}
+<section class="section" id="videos">
+  <div class="container">
+    {%- include section-head.html section=s title="영상" %}
+    <div class="grid grid--fit">
+      {%- for v in site.data.videos %}
+      <figure class="video">
+        <div class="video__frame">
+          <a class="video__thumb" href="https://www.youtube.com/watch?v={{ v.id }}" data-video="{{ v.id }}" aria-label="재생: {{ v.title | escape }}">
+            <img src="https://i.ytimg.com/vi/{{ v.id }}/maxresdefault.jpg" alt="" loading="lazy"
+              onerror="this.onerror=null;this.src='https://i.ytimg.com/vi/{{ v.id }}/hqdefault.jpg'">
+            <span class="video__play">{% include icon.html name="play" %}{{ v.length | default: "재생" }}</span>
+          </a>
+        </div>
+        <figcaption class="video__body">
+          {%- if v.date %}<span class="video__date">{{ v.date }}</span>{% endif %}
+          <strong class="video__title">{{ v.title }}</strong>
+          {%- if v.text %}<p class="video__text">{{ v.text }}</p>{% endif %}
+        </figcaption>
+      </figure>
+      {%- endfor %}
+    </div>
+  </div>
+</section>
+{%- endif %}

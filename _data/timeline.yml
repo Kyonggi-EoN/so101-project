@@ -1,0 +1,20 @@
+# 첫 화면 '진행 경과'. 위에서부터 순서대로 보입니다 (오래된 것을 위에).
+# date는 따옴표로 감쌉니다. url을 적으면 제목이 그 주소로 가는 링크가 됩니다.
+
+- date: "2026.09.01"
+  title: ACT 정책 실험
+  text: 모방학습 정책 ACT를 100,000 step 학습해 로봇팔을 움직이고, 카메라 위치에 따른 차이를 확인 (위 영상)
+
+- date: "2026.09.19"
+  title: 저장소 시작
+  text: LeRobot 코드를 저장소에 복사해 두고(2026-09-17 커밋 기준), 설치·작업 규칙 문서를 갖춤
+  url: https://github.com/Kyonggi-EoN/so101-project
+
+- date: "2026.11.17"
+  title: 성과전시회 시연 데이터 수집
+  text: leader 팔로 직접 조종하며 시연에 쓸 학습 데이터를 모음 (위 영상)
+
+- date: "2026.11.24"
+  title: 성과전시회 로봇 시연
+  text: 24·25일 이틀, 제2공학관 1층 로비에서 12:00~12:30, 17:00~17:30에 SO-ARM101 시연
+  url: https://kyonggi-eon.github.io/news/2026/ee-exhibition/
