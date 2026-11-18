@@ -1,0 +1,15 @@
+{%- comment -%}
+  CSS·로고는 EoN 홈페이지(site.main_site)의 것을 그대로 불러 씁니다. 홈페이지와 같은 모양이 나는 이유입니다.
+  이 사이트에만 있는 모양은 assets/css/site.css에 따로 둡니다.
+{%- endcomment -%}
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+{% seo %}
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<link rel="stylesheet" href="{{ site.main_site }}/assets/css/main.css">
+<link rel="stylesheet" href="{{ '/assets/css/site.css' | relative_url }}">
+<link rel="icon" href="{{ site.main_site }}/assets/images/favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="{{ site.main_site }}/assets/images/apple-touch-icon.png">
+<meta name="color-scheme" content="light">
+<meta name="theme-color" content="#ffffff">

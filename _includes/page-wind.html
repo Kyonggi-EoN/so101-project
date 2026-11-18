@@ -1,0 +1,10 @@
+{%- comment -%}
+  페이지 제목 칸·글 상세 페이지 머리 뒤의 바람 줄기 그림판. 그리는 건 assets/js/modules/wind.js의 page.
+  include.class: 그림판에 붙일 클래스 (위치는 그 클래스의 스타일, _sass/components/_wind.scss)
+  켜고 끄기는 _config.yml의 wind.pages. 페이지 머리말에 wind: false면 이 페이지만 끄고, wind: obstacle처럼 마우스 반응만 바꿀 수도 있습니다.
+{%- endcomment -%}
+{%- assign page_wind = site.wind.pages -%}
+{%- if page.wind == false -%}{%- assign page_wind = false -%}{%- elsif page.wind -%}{%- assign page_wind = page.wind -%}{%- endif -%}
+{%- if page_wind %}
+<canvas class="{{ include.class }}" data-wind="page" data-wind-mode="{{ page_wind }}" aria-hidden="true"></canvas>
+{%- endif -%}

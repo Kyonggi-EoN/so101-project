@@ -1,0 +1,57 @@
+{%- comment -%}
+  프로젝트 목록. 데이터: _projects/*.md (order 오름차순, 없으면 맨 뒤)
+  사진(image)이 있는 프로젝트는 사진 카드로, 없는 프로젝트는 그 아래에 목록 한 줄로 보여 줍니다.
+  모양은 EoN 홈페이지의 프로젝트 목록(_includes/sections/projects.html)과 같습니다.
+  옵션: title, eyebrow, limit, more_url, heading(false면 제목줄 숨김),
+        grid(사진 카드 배치. 기본 3: 한 줄에 최대 3장, fit: 장수만큼 꽉 채움 — 홈페이지 기본값)
+{%- endcomment -%}
+{%- assign s = include.section -%}
+{%- assign items = site.projects | sort: "order", "last" -%}
+{%- if s.limit -%}{%- assign items = items | slice: 0, s.limit -%}{%- endif -%}
+{%- assign with_image = items | where_exp: "p", "p.image" -%}
+{%- assign without_image = items | where_exp: "p", "p.image == nil" -%}
+<section class="section" id="projects">
+  <div class="container">
+    {%- include section-head.html section=s title="프로젝트" %}
+    {%- if items.size > 0 %}
+    {%- if with_image.size > 0 %}
+    <div class="grid grid--{{ s.grid | default: 3 }}">
+      {%- for p in with_image %}
+      {%- assign status_label = site.data.labels.project_status[p.status] | default: p.status %}
+      <article class="card card--project">
+        <div class="card__media">
+          <img src="{{ p.image | relative_url }}" alt="{{ p.image_alt }}" loading="lazy">
+          {%- if status_label %}<span class="card__label">{{ status_label }}</span>{% endif %}
+        </div>
+        <div class="card__body">
+          <h3 class="card__title"><a class="card__link cover-link" href="{{ p.url | relative_url }}">{{ p.title }}</a></h3>
+          {%- if p.summary %}<p class="card__text">{{ p.summary }}</p>{% endif %}
+          {%- if p.year or p.tags.size > 0 %}
+          <ul class="tags">{% if p.year %}<li>{{ p.year }}</li>{% endif %}{% for t in p.tags %}<li>{{ t }}</li>{% endfor %}</ul>
+          {%- endif %}
+          {%- include project-links.html project=p class="card__actions" %}
+        </div>
+      </article>
+      {%- endfor %}
+    </div>
+    {%- endif %}
+    {%- if without_image.size > 0 %}
+    <ul class="project-rows">
+      {%- for p in without_image %}
+      <li class="project-row">
+        <span class="project-row__year">{{ p.year }}</span>
+        {% include badge.html kind="project_status" code=p.status %}
+        <div class="project-row__main">
+          <a class="project-row__title cover-link" href="{{ p.url | relative_url }}">{{ p.title }}</a>
+          {%- if p.summary %}<p class="project-row__text">{{ p.summary }}</p>{% endif %}
+        </div>
+        {%- include project-links.html project=p class="project-row__links" %}
+      </li>
+      {%- endfor %}
+    </ul>
+    {%- endif %}
+    {%- else %}
+    <p class="empty">아직 올라온 프로젝트가 없습니다. 첫 프로젝트를 만드는 법은 <a href="{% include repo-url.html path="projects/README.md" %}">projects/README.md</a>에 있습니다.</p>
+    {%- endif %}
+  </div>
+</section>

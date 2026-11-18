@@ -1,0 +1,7 @@
+# 프로젝트 상태 코드 → 화면에 보이는 이름. 프로젝트 머리말의 status에는 왼쪽 코드값을 적습니다.
+# EoN 홈페이지 content/_data/labels.yml의 project_status와 같습니다 (배지 색도 홈페이지 CSS가 정함).
+
+project_status:
+  active: 진행 중
+  done: 완료
+  archived: 보관

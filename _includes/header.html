@@ -1,0 +1,27 @@
+{%- comment -%}
+  머리줄. EoN 홈페이지 _includes/header.html과 같은 마크업입니다.
+  로고와 메뉴는 홈페이지로 가고, 메뉴 목록은 _data/navigation.yml에서 읽습니다.
+{%- endcomment -%}
+<header class="site-header">
+  <div class="container site-header__inner">
+    <a class="brand" href="{{ site.main_site }}/">
+      <img class="brand__logo" src="{{ site.main_site }}/assets/images/logo.svg" alt="" width="34" height="34">
+      <span class="brand__name">EoN</span>
+    </a>
+
+    <nav class="site-nav" id="site-nav" aria-label="주 메뉴">
+      <ul>
+        {%- for item in site.data.navigation %}
+        <li><a href="{{ site.main_site }}{{ item.url }}"{% if item.current %} aria-current="page"{% endif %}>{{ item.title }}</a></li>
+        {%- endfor %}
+      </ul>
+    </nav>
+
+    <div class="site-header__actions">
+      <a class="icon-btn" href="https://github.com/{{ site.repo }}" aria-label="GitHub">{% include icon.html name="github" %}</a>
+      <button class="icon-btn nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="메뉴">
+        {%- include icon.html name="menu" -%}
+      </button>
+    </div>
+  </div>
+</header>

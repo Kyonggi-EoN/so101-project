@@ -1,0 +1,49 @@
+# gh-pages 브랜치에 push하면 Jekyll로 빌드해 GitHub Pages에 배포합니다.
+# gh-pages로 들어오는 Pull Request에서는 빌드만 해 보고 배포하지 않습니다 (깨진 글이 올라가는 것을 미리 막음).
+# 이 파일은 gh-pages 브랜치에만 있습니다. master 쪽 PR·push에는 돌지 않습니다.
+name: Pages
+
+on:
+  push:
+    branches: [gh-pages]
+  pull_request:
+    branches: [gh-pages]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true # Ruby 버전은 .ruby-version을 따릅니다
+
+      - name: Build
+        run: bundle exec jekyll build --strict_front_matter
+        env:
+          JEKYLL_ENV: production
+
+      - uses: actions/upload-pages-artifact@v4
+        if: github.event_name != 'pull_request'
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

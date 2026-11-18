@@ -1,0 +1,18 @@
+{%- comment -%}
+  섹션 제목줄: 왼쪽 큰 제목, 같은 줄 오른쪽 끝에 "전체 보기 →", 아래 진한 선.
+  사용: {% include section-head.html section=s title="소식" %}
+  - title은 기본 제목입니다. 섹션 옵션(페이지 머리말 sections:)에 title이 있으면 그것을 씁니다.
+  - eyebrow, more_url, more_label도 섹션 옵션에서 읽습니다. heading: false면 그리지 않습니다.
+{%- endcomment -%}
+{%- assign head = include.section -%}
+{%- unless head.heading == false %}
+<div class="section__head">
+  <div>
+    {%- if head.eyebrow %}<p class="eyebrow">{{ head.eyebrow }}</p>{% endif %}
+    <h2 class="section__title">{{ head.title | default: include.title }}</h2>
+  </div>
+  {%- if head.more_url %}
+  <a class="section__more" href="{% include link-url.html url=head.more_url %}">{{ head.more_label | default: "전체 보기" }}{% include icon.html name="arrow" %}</a>
+  {%- endif %}
+</div>
+{%- endunless %}

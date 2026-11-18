@@ -1,0 +1,73 @@
+---
+layout: default
+---
+{%- comment -%}
+  일반 페이지: [제목 칸] → [Markdown 본문] → [sections 목록] 순서로 그립니다. (EoN 홈페이지 _layouts/page.html과 같은 방식)
+  섹션은 머리말의 sections에 적은 순서대로 _includes/sections/<이름>.html을 불러옵니다.
+  - 문자열로 적으면 기본 설정:   - docs
+  - 옵션이 필요하면 type과 함께: - type: projects
+                                   limit: 3
+  - Markdown 본문을 섹션 사이에 두려면 sections에 content를 적습니다(title을 주면 제목줄도 그림).
+      - type: content
+        title: 시작하기
+  제목 칸 머리말: eyebrow(제목 위 작은 글), eyebrow_url(그 글의 링크), description(설명), status·year·members(한 줄 정보),
+  tags, actions(버튼: label, url, icon, style: primary|ghost)
+  제목 칸 오른쪽 바람 줄기를 이 페이지만 끄려면 wind: false, 마우스 반응만 바꾸려면 wind: obstacle
+{%- endcomment -%}
+
+{%- if page.title -%}
+<header class="page-hero">
+  {%- include page-wind.html class="page-hero__wind" %}
+  <div class="container">
+    {%- if page.eyebrow %}<p class="eyebrow">{% if page.eyebrow_url %}<a href="{% include link-url.html url=page.eyebrow_url %}">{{ page.eyebrow }}</a>{% else %}{{ page.eyebrow }}{% endif %}</p>{% endif %}
+    <h1 class="page-hero__title">{{ page.title }}</h1>
+    {%- if page.description %}<p class="page-hero__lead">{{ page.description }}</p>{% endif %}
+    {%- if page.status or page.year or page.members %}
+    <div class="meta">
+      {%- if page.status %}{% include badge.html kind="project_status" code=page.status %}{% endif %}
+      {%- if page.year %}<span>{{ page.year }}</span>{% endif %}
+      {%- if page.members %}<span>{{ page.members }}</span>{% endif %}
+    </div>
+    {%- endif %}
+    {%- if page.tags.size > 0 %}
+    <ul class="tags">{% for t in page.tags %}<li>{{ t }}</li>{% endfor %}</ul>
+    {%- endif %}
+    {%- if page.actions %}
+    <div class="btn-row">
+      {%- for a in page.actions %}
+      <a class="btn btn--{{ a.style | default: 'primary' }}" href="{% include link-url.html url=a.url %}">{% if a.icon %}{% include icon.html name=a.icon %}{% endif %}{{ a.label }}</a>
+      {%- endfor %}
+    </div>
+    {%- endif %}
+  </div>
+</header>
+{%- endif -%}
+
+{%- comment -%} 본문 칸. sections에 content가 있으면 그 자리에, 없으면 제목 칸 바로 아래에 그립니다. {%- endcomment -%}
+{%- assign body = content | strip -%}
+{%- assign body_placed = false -%}
+{%- for s in page.sections -%}{%- assign type = s.type | default: s -%}{%- if type == "content" -%}{%- assign body_placed = true -%}{%- endif -%}{%- endfor -%}
+
+{%- if body != "" and body_placed == false %}
+<section class="section section--prose">
+  <div class="container">
+    <div class="prose prose--page">{{ content }}</div>
+  </div>
+</section>
+{%- endif -%}
+
+{%- for s in page.sections -%}
+  {%- assign type = s.type | default: s -%}
+  {%- if type == "content" -%}
+    {%- if body != "" %}
+<section class="section section--prose" id="{{ s.id | default: 'content' }}">
+  <div class="container">
+    {%- if s.title %}{% include section-head.html section=s %}{% endif %}
+    <div class="prose prose--page">{{ content }}</div>
+  </div>
+</section>
+    {%- endif -%}
+  {%- else %}
+  {% include sections/{{ type }}.html section=s %}
+  {%- endif -%}
+{%- endfor -%}

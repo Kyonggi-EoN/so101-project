@@ -1,0 +1,17 @@
+# 상단 메뉴. EoN 홈페이지 content/_data/navigation.yml과 같은 목록입니다.
+# 홈페이지 메뉴가 바뀌면 여기도 손으로 같이 고칩니다. 주소는 홈페이지 기준 경로이고, 앞에 _config.yml의 main_site가 붙습니다.
+# current: true인 메뉴가 빨갛게 표시됩니다 (이 사이트는 홈페이지 '프로젝트' 아래 페이지).
+
+- title: 소개
+  url: /about/
+- title: 프로젝트
+  url: /projects/
+  current: true
+- title: 소식
+  url: /news/
+- title: 블로그
+  url: /blog/
+- title: UI 자료
+  url: /ui/
+- title: 멤버
+  url: /members/

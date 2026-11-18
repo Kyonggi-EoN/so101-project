@@ -1,0 +1,22 @@
+{%- comment -%}
+  문서 목록. 데이터: _data/docs.yml. 각 줄은 GitHub에서 그 문서를 엽니다.
+  옵션: title, eyebrow, heading(false면 제목줄 숨김)
+{%- endcomment -%}
+{%- assign s = include.section -%}
+<section class="section" id="docs">
+  <div class="container">
+    {%- include section-head.html section=s title="문서" %}
+    <ol class="doc-rows">
+      {%- for d in site.data.docs %}
+      <li class="doc-row">
+        <span class="doc-row__num">{{ forloop.index | prepend: "0" | slice: -2, 2 }}</span>
+        <div class="doc-row__main">
+          <a class="doc-row__title cover-link" href="{% include repo-url.html path=d.path %}">{{ d.title }}{% include icon.html name="arrow-up-right" %}</a>
+          {%- if d.text %}<p class="doc-row__text">{{ d.text }}</p>{% endif %}
+        </div>
+        <code class="doc-row__path">{{ d.path }}</code>
+      </li>
+      {%- endfor %}
+    </ol>
+  </div>
+</section>

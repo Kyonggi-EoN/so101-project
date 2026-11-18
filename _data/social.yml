@@ -1,0 +1,15 @@
+# 푸터 연락처. EoN 홈페이지 content/_data/social.yml과 같은 목록입니다. 홈페이지가 바뀌면 같이 고칩니다.
+# icon 이름은 _includes/icon.html에 정의된 것만 쓸 수 있습니다: mail, github, youtube, chat
+
+- label: 이메일
+  url: mailto:kyonggieon@gmail.com
+  icon: mail
+- label: GitHub
+  url: https://github.com/Kyonggi-EoN
+  icon: github
+- label: YouTube
+  url: https://www.youtube.com/@Kyonggi-EoN
+  icon: youtube
+- label: 네이버 카페
+  url: https://cafe.naver.com/kyonggieon
+  icon: chat

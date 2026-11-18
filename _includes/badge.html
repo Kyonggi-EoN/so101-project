@@ -1,0 +1,5 @@
+{%- comment -%}
+  상태 글자. 코드(머리말의 status)를 _data/labels.yml의 이름으로 바꿔 보여 줍니다(없으면 코드 그대로).
+  색은 홈페이지 CSS의 badge--<코드>가 정합니다. 사용: {% include badge.html kind="project_status" code=p.status %}
+{%- endcomment -%}
+<span class="badge badge--{{ include.code }}">{{ site.data.labels[include.kind][include.code] | default: include.code }}</span>

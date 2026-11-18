@@ -1,0 +1,22 @@
+# 첫 화면 '문서' 목록. 위에서부터 순서대로 보입니다.
+# path는 저장소(master 브랜치) 안의 파일 경로입니다. GitHub에서 그 파일을 여는 링크가 됩니다.
+# master에 문서가 추가·이름 변경되면 여기도 같이 고칩니다.
+
+- title: 설치하기
+  path: docs/1_setup.md
+  text: 처음이면 여기부터. 설치와 그래픽카드 설정 (20분)
+- title: 프로젝트 구조
+  path: docs/2_codebase.md
+  text: 무엇이 어디에 있고, 누가 고칠 수 있는지
+- title: 명령어
+  path: docs/3_commands.md
+  text: uv 사용법과 환경 점검
+- title: git 기초
+  path: docs/4_git.md
+  text: git이 처음이라면
+- title: 작업 규칙
+  path: CONTRIBUTING.md
+  text: 브랜치, 커밋, PR 3단계
+- title: 새 프로젝트 만들기
+  path: projects/README.md
+  text: 양식 복사부터 PR까지

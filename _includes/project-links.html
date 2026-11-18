@@ -1,0 +1,11 @@
+{%- comment -%}
+  프로젝트 카드·목록 줄 안의 링크: 코드(저장소 안 폴더), 영상. 둘 다 없으면 아무것도 그리지 않습니다.
+  사용: {% include project-links.html project=p class="card__actions" %}
+{%- endcomment -%}
+{%- assign links_of = include.project -%}
+{%- if links_of.folder or links_of.video %}
+<div class="sub-links {{ include.class }}">
+  {%- if links_of.folder %}<a href="{% include repo-url.html path=links_of.folder %}">{% include icon.html name="github" %}코드</a>{% endif %}
+  {%- if links_of.video %}<a href="{{ links_of.video }}">{% include icon.html name="youtube" %}영상</a>{% endif %}
+</div>
+{%- endif %}

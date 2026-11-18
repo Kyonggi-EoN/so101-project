@@ -1,0 +1,27 @@
+{%- comment -%}
+  푸터. EoN 홈페이지 _includes/footer.html과 같은 마크업입니다. 연락처는 _data/social.yml에서 읽습니다.
+{%- endcomment -%}
+<footer class="site-footer">
+  <div class="container site-footer__inner">
+    <div class="site-footer__brand">
+      <a class="brand" href="{{ site.main_site }}/">
+        <img class="brand__logo" src="{{ site.main_site }}/assets/images/logo.svg" alt="" width="28" height="28">
+        <span class="brand__name">EoN</span>
+      </a>
+      <p>Electronic Over Network<br>경기대학교 전자공학과 학술 동아리 · Since 2005</p>
+    </div>
+
+    <ul class="site-footer__links">
+      {%- for s in site.data.social %}
+      <li><a href="{{ s.url }}">{% include icon.html name=s.icon %}<span>{{ s.label }}</span></a></li>
+      {%- endfor %}
+    </ul>
+  </div>
+  <div class="container site-footer__copy">
+    <span>© {{ site.time | date: "%Y" }} EoN · Kyonggi University</span>
+    <span class="site-footer__meta">
+      <a href="{{ site.main_site }}/ui/">로고·UI 자료</a>
+      <a href="https://github.com/{{ site.repo }}/tree/gh-pages">이 사이트의 소스</a>
+    </span>
+  </div>
+</footer>

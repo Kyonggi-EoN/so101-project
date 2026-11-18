@@ -1,0 +1,6 @@
+{%- comment -%}
+  저장소 안 경로 → GitHub 주소. 폴더면 tree, 파일이면 blob으로 엽니다(GitHub은 둘 다 알아서 넘겨 주지만 맞춰 둠).
+  사용: href="{% include repo-url.html path="docs/1_setup.md" %}"
+{%- endcomment -%}
+{%- if include.path contains "." -%}{%- assign kind = "blob" -%}{%- else -%}{%- assign kind = "tree" -%}{%- endif -%}
+https://github.com/{{ site.repo }}/{{ kind }}/{{ site.repo_branch }}/{{ include.path }}{%- comment -%} 끝 줄바꿈이 주소에 붙지 않게 {%- endcomment -%}

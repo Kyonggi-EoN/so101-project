@@ -1,0 +1,81 @@
+/* ──────────────────────────────────────────────────────────────
+   이 사이트에만 있는 모양.
+   기본 모양(머리줄·제목 칸·카드·목록·본문·코드)은 EoN 홈페이지의 main.css를 그대로 씁니다(_includes/head.html).
+   색·간격은 홈페이지 토큰(var(--…))만 씁니다. 새 색이나 숫자를 여기서 만들지 않습니다.
+   ────────────────────────────────────────────────────────────── */
+
+/* 문서 목록 (_includes/sections/docs.html): 번호 · 제목과 설명 · 파일 경로
+   생김새는 홈페이지의 프로젝트 목록 줄(.project-row)과 맞춥니다. */
+.doc-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.section__head + .doc-rows {
+  border-top: 0;
+}
+
+.doc-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--col-label) 1fr auto;
+  align-items: baseline;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-3);
+  border-bottom: 1px solid var(--border);
+  transition: background var(--dur) var(--ease);
+}
+
+.doc-row:hover {
+  background: var(--bg-subtle);
+}
+
+.doc-row__num {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-muted);
+}
+
+.doc-row__title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.doc-row:hover .doc-row__title {
+  color: var(--brand-text);
+}
+
+.doc-row__text {
+  margin-top: var(--space-1);
+  font-size: var(--fs-sm);
+  color: var(--text-muted);
+}
+
+.doc-row__path {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--text-muted);
+}
+
+@media (max-width: 560px) {
+  .doc-row {
+    grid-template-columns: 2.5rem 1fr;
+  }
+
+  .doc-row__path {
+    display: none;
+  }
+}
+
+/* 제목줄 아래에 Markdown 본문이 올 때(첫 화면 '시작하기') 선과 글 사이 간격.
+   홈페이지의 '제목줄 + 카드 묶음' 간격(.section__head + .grid)과 같게 둡니다. */
+.section__head + .prose {
+  margin-top: var(--space-6);
+}

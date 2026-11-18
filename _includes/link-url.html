@@ -1,0 +1,9 @@
+{%- comment -%}
+  주소 정규화: 외부 주소(http, mailto)는 그대로, 사이트 내부 주소는 baseurl을 붙입니다.
+  사용: href="{% include link-url.html url=item.url %}"
+{%- endcomment -%}
+{%- if include.url contains "://" or include.url contains "mailto:" -%}
+{{ include.url }}
+{%- else -%}
+{{ include.url | relative_url }}
+{%- endif -%}

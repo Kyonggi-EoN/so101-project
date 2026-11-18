@@ -1,0 +1,45 @@
+---
+layout: default
+---
+{%- comment -%}
+  프로젝트 한 개의 페이지. 모양은 EoN 홈페이지의 프로젝트 상세(_layouts/project.html)와 같습니다.
+  머리말 항목은 _templates/project.md에 설명이 있습니다.
+{%- endcomment -%}
+<article class="article">
+  <div class="article__top">
+  {%- include page-wind.html class="article__wind" %}
+  <header class="article__head container container--prose">
+    <p class="eyebrow"><a href="{{ '/' | relative_url }}">← {{ site.title }}</a></p>
+    <h1 class="article__title">{{ page.title }}</h1>
+    {%- if page.summary %}<p class="article__lead">{{ page.summary }}</p>{% endif %}
+    <div class="meta">
+      {%- if page.status %}{% include badge.html kind="project_status" code=page.status %}{% endif %}
+      {%- if page.year %}<span>{{ page.year }}</span>{% endif %}
+      {%- if page.members %}<span>{{ page.members | join: ", " }}</span>{% endif %}
+    </div>
+    {%- if page.tags.size > 0 %}
+    <ul class="tags">{% for t in page.tags %}<li>{{ t }}</li>{% endfor %}</ul>
+    {%- endif %}
+    {%- if page.folder or page.video %}
+    <div class="btn-row">
+      {%- if page.folder %}
+      <a class="btn btn--primary" href="{% include repo-url.html path=page.folder %}">{% include icon.html name="github" %}코드와 실행 방법</a>
+      {%- endif %}
+      {%- if page.video %}
+      <a class="btn btn--ghost" href="{{ page.video }}">{% include icon.html name="youtube" %}영상</a>
+      {%- endif %}
+    </div>
+    {%- endif %}
+  </header>
+  </div>
+
+  {%- if page.image %}
+  <figure class="article__cover container container--prose">
+    <img src="{{ page.image | relative_url }}" alt="{{ page.image_alt }}">
+  </figure>
+  {%- endif %}
+
+  <div class="container container--prose prose">
+    {{ content }}
+  </div>
+</article>
